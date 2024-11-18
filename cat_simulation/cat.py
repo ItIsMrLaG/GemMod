@@ -90,6 +90,6 @@ class Cat:
             self_status = ti.max(self.status, INTERACTION_LEVEL_1)
 
         else:
-            self_status = INTERACTION_NO
+            self_status = ti.max(self.status, INTERACTION_NO)
 
         self._update_status_with_color(self_status)
