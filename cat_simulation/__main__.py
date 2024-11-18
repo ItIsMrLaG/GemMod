@@ -2,43 +2,32 @@ import taichi as ti
 
 from cat_simulation.constants import *
 from cat_simulation.cat import Cat
+from cat_simulation.grid import setup_grid, update_statuses
 
-
-F_CATS = Cat.field(shape=(N,))
-
-PIXELS = ti.field(dtype=float, shape=(PLATE_WIDTH, PLATE_HEIGHT))
-WHITE_COLOR = 0
-BLACK_COLOR = 1
-GREY_COLOR = 0.5
-
-GUI = ti.GUI("Julia Set", res=(PLATE_WIDTH, PLATE_HEIGHT))
+F_CATS = Cat.field(shape=(CATS_N,))
+GUI = ti.GUI("cat simulation", res=(PLATE_WIDTH, PLATE_HEIGHT))
 
 
 @ti.kernel
-def set_cat_ini_positions():
-    for idx in range(N):
-        F_CATS[idx].init_pos()
+def set_cat_init_positions(cats: ti.template()):
+    for idx in range(CATS_N):
+        cats[idx].init_cat()
 
 
 @ti.kernel
-def clear_pixels():
-    for i, j in PIXELS:
-        PIXELS[i, j] = 1
-
-
-@ti.kernel
-def paint_cats():
-    for idx in range(N):
-        F_CATS[idx].move()
-        F_CATS[idx].update_pixel()
-        F_CATS[idx].paint_pixel(PIXELS)
+def move_cats(cats: ti.template()):
+    for idx in range(CATS_N):
+        cats[idx].move()
 
 
 if __name__ == '__main__':
-    set_cat_ini_positions()
-    clear_pixels()
+    setup_grid(CATS_N, RADIUS_1, PLATE_WIDTH, PLATE_HEIGHT)
+    set_cat_init_positions(F_CATS)
     while GUI.running:
-        clear_pixels()
-        paint_cats()
-        GUI.set_image(PIXELS)
+        move_cats(F_CATS)
+        update_statuses(F_CATS, EUCLIDEAN_DISTANCE)
+        pos = F_CATS.norm_point.to_numpy()
+        r = F_CATS.radius.to_numpy()
+        c = F_CATS.color.to_numpy()
+        GUI.circles(pos, radius=r, color=c)
         GUI.show()
