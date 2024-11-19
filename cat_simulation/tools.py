@@ -1,7 +1,10 @@
 import taichi as ti
 import taichi.math as tm
 
-from cat_simulation.constants import *
+from cat_simulation.constants import (
+    MANHATTAN_DISTANCE,
+    CHEBYSHEV_DISTANCE,
+)
 
 
 @ti.func
@@ -34,10 +37,10 @@ def get_distance(p1: tm.vec2, p2: tm.vec2, distance_type: ti.i32) -> ti.f32:
 
 
 @ti.func
-def move_pattern_random(point_: tm.vec2) -> tm.vec2:
+def move_pattern_random(point_: tm.vec2, move_r: ti.f32, plate_w: ti.i32, plate_h: ti.i32) -> tm.vec2:
     # unsigned values
-    xd_u = ti.random() * MOVE_RADIUS
-    yd_u = ti.random() * MOVE_RADIUS
+    xd_u = ti.random() * move_r
+    yd_u = ti.random() * move_r
 
     # generate sign: sign_f(x) = -2x + 1
     #   if sign_f(1) -> -1
@@ -48,10 +51,43 @@ def move_pattern_random(point_: tm.vec2) -> tm.vec2:
     new_x = point_[0] + xd_u * xd_s
     new_y = point_[1] + yd_u * yd_s
 
-    if not (PLATE_W_MIN <= new_x <= PLATE_WIDTH):
+    if not (0 <= new_x <= plate_w):
         new_x = point_[0] - xd_u * xd_s
 
-    if not (PLATE_H_MIN <= new_y <= PLATE_HEIGHT):
+    if not (0 <= new_y <= plate_h):
         new_y = point_[1] - yd_u * yd_s
 
     return ti.math.vec2([new_x, new_y])
+
+
+@ti.func
+def move_pattern_line(point_: tm.vec2, old_point_: tm.vec2, move_r: ti.f32, plate_w: ti.i32,
+                      plate_h: ti.i32) -> tm.vec2:
+    delta = point_ - old_point_
+    n_point_ = point_ + delta
+
+    random_point_ = move_pattern_random(point_, move_r, plate_w, plate_h)
+
+    if not (0 <= n_point_[0] <= plate_w):
+        n_point_[0] = random_point_[0]
+
+    if not (0 <= n_point_[1] <= plate_h):
+        n_point_[1] = random_point_[1]
+
+    return n_point_
+
+
+@ti.func
+def move_pattern_phis(point_: tm.vec2, old_point_: tm.vec2, plate_w: ti.i32, plate_h: ti.i32) -> tm.vec2:
+    delta = point_ - old_point_
+    n_point_ = point_ + delta
+
+    if not (0 <= n_point_[0] <= plate_w):
+        n_point_[0] = 0 if n_point_[0] <= 0 else plate_w
+        n_point_[0] -= delta[0]
+
+    if not (0 <= n_point_[1] <= plate_h):
+        n_point_[1] = 0 if n_point_[1] <= 0 else plate_h
+        n_point_[1] -= delta[1]
+
+    return n_point_
