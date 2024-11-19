@@ -55,7 +55,7 @@ class TestUpdateStatus:
             (50000, 2, 8, 1, 1000, 1000, const.EUCLIDEAN_DISTANCE),
         ],
     )
-    def test_naive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
+    def test_primitive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
         setup_grid(cat_n=N, r1=R1, width=WIDTH, height=HEIGHT)
         F_CATS = init_cats(N, R0, R1, WIDTH, HEIGHT)
         set_cat_init_positions(N, RADIUS, F_CATS)

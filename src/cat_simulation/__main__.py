@@ -31,6 +31,7 @@ if __name__ == "__main__":
         l0_color=cfg.COLOR_LEVEL_0,
         l1_color=cfg.COLOR_LEVEL_1,
         lNO_color=cfg.COLOR_LEVEL_NO,
+        prob_inter=cfg.PROB_INTERACTION,
     )
     setup_grid(
         cat_n=cfg.CATS_N,

@@ -16,6 +16,8 @@ from cat_simulation.constants import (
     MOVE_PATTERN_RANDOM_ID,
     MOVE_PATTERN_LINE_ID,
     MOVE_PATTERN_PHIS_ID,
+    # PROBABILISTIC INTERACTION #
+    ENABLE_PROB_INTER,
 )
 
 _RADIUS_0: ti.f32
@@ -24,6 +26,7 @@ _PLATE_WIDTH: ti.i32
 _PLATE_HEIGHT: ti.i32
 _MOVE_RADIUS: ti.f32
 _MOVE_PATTERN: ti.i32
+_PROB_INTER: ti.i32
 
 _COLOR_LEVEL_0: ti.i32
 _COLOR_LEVEL_1: ti.i32
@@ -40,6 +43,7 @@ def init_cat_env(
     l0_color: ti.i32,
     l1_color: ti.i32,
     lNO_color: ti.i32,
+    prob_inter: ti.i32,
 ):
     global \
         _RADIUS_0, \
@@ -47,13 +51,15 @@ def init_cat_env(
         _PLATE_WIDTH, \
         _PLATE_HEIGHT, \
         _MOVE_RADIUS, \
-        _MOVE_PATTERN
+        _MOVE_PATTERN, \
+        _PROB_INTER
     _MOVE_RADIUS = move_radius
     _RADIUS_0 = r0
     _RADIUS_1 = r1
     _PLATE_WIDTH = width
     _PLATE_HEIGHT = height
     _MOVE_PATTERN = move_pattern
+    _PROB_INTER = prob_inter
 
     global _COLOR_LEVEL_0, _COLOR_LEVEL_1, _COLOR_LEVEL_NO
     _COLOR_LEVEL_0 = l0_color
@@ -136,8 +142,11 @@ class Cat:
         if dist <= _RADIUS_0:
             self_status = INTERACTION_LEVEL_0
 
-        elif dist <= _RADIUS_1:  # ti.random() <= 1.0 / (dist * dist)
-            self_status = ti.max(self.status, INTERACTION_LEVEL_1)
+        elif dist <= _RADIUS_1:
+            if not (
+                _PROB_INTER == ENABLE_PROB_INTER and ti.random() >= 1.0 / (dist * dist)
+            ):
+                self_status = ti.max(self.status, INTERACTION_LEVEL_1)
 
         else:
             self_status = ti.max(self.status, INTERACTION_NO)

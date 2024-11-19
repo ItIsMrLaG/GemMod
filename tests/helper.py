@@ -1,18 +1,7 @@
 from cat_simulation.cat import init_cat_env, Cat
 import taichi as ti
 from cat_simulation.tools import get_distance
-from cat_simulation.constants import (
-    # LEVELS #
-    INTERACTION_LEVEL_0,
-    INTERACTION_LEVEL_1,
-    INTERACTION_NO,
-    # PATTERNS #
-    MOVE_PATTERN_RANDOM_ID,
-    # COLORS #
-    RED_COLOR,
-    YELLOW_COLOR,
-    GREEN_COLOR,
-)
+import cat_simulation.constants as const
 
 
 def init_cats(n, r0, r1, width, height):
@@ -22,10 +11,11 @@ def init_cats(n, r0, r1, width, height):
         r1,
         width,
         height,
-        MOVE_PATTERN_RANDOM_ID,
-        RED_COLOR,
-        YELLOW_COLOR,
-        GREEN_COLOR,
+        const.MOVE_PATTERN_RANDOM_ID,
+        const.RED_COLOR,
+        const.YELLOW_COLOR,
+        const.GREEN_COLOR,
+        const.DISABLE_PROB_INTER,
     )
     cats = Cat.field(shape=(n,))
     return cats
@@ -44,9 +34,9 @@ def init_cats_with_custom_points(
     for i in range(n):
         cats[i].radius = radius
         cats[i]._set_point(points[i])
-        cats[i].move_pattern = MOVE_PATTERN_RANDOM_ID
-        cats[i].status = INTERACTION_NO
-        cats[i].color = GREEN_COLOR
+        cats[i].move_pattern = const.MOVE_PATTERN_RANDOM_ID
+        cats[i].status = const.INTERACTION_NO
+        cats[i].color = const.GREEN_COLOR
 
 
 @ti.kernel
@@ -70,8 +60,8 @@ def primitive_update_states(
                 continue
             dist = get_distance(cats[i].point, cats[j].point, distance_type)
             if dist <= r0:
-                statuses[i] = INTERACTION_LEVEL_0
+                statuses[i] = const.INTERACTION_LEVEL_0
             elif dist <= r1:
-                statuses[i] = ti.max(INTERACTION_LEVEL_1, statuses[i])
+                statuses[i] = ti.max(const.INTERACTION_LEVEL_1, statuses[i])
             else:
-                statuses[i] = ti.max(INTERACTION_NO, statuses[i])
+                statuses[i] = ti.max(const.INTERACTION_NO, statuses[i])
