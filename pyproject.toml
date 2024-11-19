@@ -1,0 +1,30 @@
+[project]
+name = "cat-simulation"
+version = "0.1.0"
+description = "Cats simulator"
+authors = [
+    { name = "Georgy S", email = "it.is.mr.lag@gmail.com" },
+    { name = "Julia K", email = "julickk04@mail.ru" },
+    { name = "Andrei", email = "therain.i@yahoo.com" }
+]
+dependencies = [
+    "taichi>=1.7.2",
+    "pytest>=8.3.3",
+    "pre-commit>=4.0.1",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cat_simulation"]
