@@ -46,12 +46,7 @@ _F_PREFIX_SUM: Any
 _F_CAT_PER_CELL: Any
 
 
-def setup_grid(
-    cat_n: ti.i32,
-    r1: ti.i32,
-    width: ti.i32,
-    height: ti.i32
-):
+def setup_grid(cat_n: ti.i32, r1: ti.i32, width: ti.i32, height: ti.i32):
     global _CATS_N, _RADIUS_1, _PLATE_WIDTH, _PLATE_HEIGHT
     _CATS_N = cat_n
     _RADIUS_1 = r1
@@ -100,7 +95,9 @@ def init_cell_storage(cats: ti.template()):
             if row == 0:
                 _F_PREFIX_SUM[col, row] += _F_CAT_PER_CELL[col, row]
             else:
-                _F_PREFIX_SUM[col, row] = _F_PREFIX_SUM[col, row - 1] + _F_CAT_PER_CELL[col, row]
+                _F_PREFIX_SUM[col, row] = (
+                    _F_PREFIX_SUM[col, row - 1] + _F_CAT_PER_CELL[col, row]
+                )
 
             cell_lin_idx = col * _GRID_ROW_N + row
             head = _F_PREFIX_SUM[col, row] - _F_CAT_PER_CELL[col, row]
@@ -130,8 +127,10 @@ def update_statuses(cats: ti.template(), distance_type: ti.i32):
         for cell_col in range(x_begin, x_end):
             for cell_row in range(y_begin, y_end):
                 neighbour_lin_idx = cell_col * _GRID_ROW_N + cell_row
-                for _idx2 in range(_F_CELL_HEADS[neighbour_lin_idx],
-                                   _F_CELL_HEADS[neighbour_lin_idx + 1]):
+                for _idx2 in range(
+                    _F_CELL_HEADS[neighbour_lin_idx],
+                    _F_CELL_HEADS[neighbour_lin_idx + 1],
+                ):
                     idx2 = _F_CELL_STORAGE[_idx2]
 
                     if idx1 != idx2:

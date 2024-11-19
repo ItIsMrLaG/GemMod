@@ -20,7 +20,7 @@ def move_cats(cats: ti.template()):
         cats[idx].move()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     init_cat_env(
         move_radius=cfg.MOVE_RADIUS,
         r0=cfg.RADIUS_0,
@@ -30,13 +30,13 @@ if __name__ == '__main__':
         move_pattern=cfg.MOVE_PATTERN_ID,
         l0_color=cfg.COLOR_LEVEL_0,
         l1_color=cfg.COLOR_LEVEL_1,
-        lNO_color=cfg.COLOR_LEVEL_NO
+        lNO_color=cfg.COLOR_LEVEL_NO,
     )
     setup_grid(
         cat_n=cfg.CATS_N,
         r1=cfg.RADIUS_1,
         width=cfg.PLATE_WIDTH,
-        height=cfg.PLATE_HEIGHT
+        height=cfg.PLATE_HEIGHT,
     )
     set_cat_init_positions(F_CATS)
     while GUI.running:

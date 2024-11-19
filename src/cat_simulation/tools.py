@@ -37,7 +37,9 @@ def get_distance(p1: tm.vec2, p2: tm.vec2, distance_type: ti.i32) -> ti.f32:
 
 
 @ti.func
-def move_pattern_random(point_: tm.vec2, move_r: ti.f32, plate_w: ti.i32, plate_h: ti.i32) -> tm.vec2:
+def move_pattern_random(
+    point_: tm.vec2, move_r: ti.f32, plate_w: ti.i32, plate_h: ti.i32
+) -> tm.vec2:
     # unsigned values
     xd_u = ti.random() * move_r
     yd_u = ti.random() * move_r
@@ -61,8 +63,13 @@ def move_pattern_random(point_: tm.vec2, move_r: ti.f32, plate_w: ti.i32, plate_
 
 
 @ti.func
-def move_pattern_line(point_: tm.vec2, old_point_: tm.vec2, move_r: ti.f32, plate_w: ti.i32,
-                      plate_h: ti.i32) -> tm.vec2:
+def move_pattern_line(
+    point_: tm.vec2,
+    old_point_: tm.vec2,
+    move_r: ti.f32,
+    plate_w: ti.i32,
+    plate_h: ti.i32,
+) -> tm.vec2:
     delta = point_ - old_point_
     n_point_ = point_ + delta
 
@@ -78,7 +85,9 @@ def move_pattern_line(point_: tm.vec2, old_point_: tm.vec2, move_r: ti.f32, plat
 
 
 @ti.func
-def move_pattern_phis(point_: tm.vec2, old_point_: tm.vec2, plate_w: ti.i32, plate_h: ti.i32) -> tm.vec2:
+def move_pattern_phis(
+    point_: tm.vec2, old_point_: tm.vec2, plate_w: ti.i32, plate_h: ti.i32
+) -> tm.vec2:
     delta = point_ - old_point_
     n_point_ = point_ + delta
 

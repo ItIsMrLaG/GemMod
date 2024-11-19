@@ -1,12 +1,11 @@
 import taichi as ti
 import taichi.math as tm
 
-from cat_simulation.run_config import COLOR_LEVEL_1
 from cat_simulation.tools import (
     get_distance,
     move_pattern_random,
     move_pattern_line,
-    move_pattern_phis
+    move_pattern_phis,
 )
 from cat_simulation.constants import (
     # LEVELS #
@@ -16,7 +15,7 @@ from cat_simulation.constants import (
     # PATTERNS #
     MOVE_PATTERN_RANDOM_ID,
     MOVE_PATTERN_LINE_ID,
-    MOVE_PATTERN_PHIS_ID
+    MOVE_PATTERN_PHIS_ID,
 )
 
 _RADIUS_0: ti.f32
@@ -32,17 +31,23 @@ _COLOR_LEVEL_NO: ti.i32
 
 
 def init_cat_env(
-        move_radius: ti.f32,
-        r0: ti.f32,
-        r1: ti.f32,
-        width: ti.i32,
-        height: ti.i32,
-        move_pattern: ti.i32,
-        l0_color: ti.i32,
-        l1_color: ti.i32,
-        lNO_color: ti.i32
+    move_radius: ti.f32,
+    r0: ti.f32,
+    r1: ti.f32,
+    width: ti.i32,
+    height: ti.i32,
+    move_pattern: ti.i32,
+    l0_color: ti.i32,
+    l1_color: ti.i32,
+    lNO_color: ti.i32,
 ):
-    global _RADIUS_0, _RADIUS_1, _PLATE_WIDTH, _PLATE_HEIGHT, _MOVE_RADIUS, _MOVE_PATTERN
+    global \
+        _RADIUS_0, \
+        _RADIUS_1, \
+        _PLATE_WIDTH, \
+        _PLATE_HEIGHT, \
+        _MOVE_RADIUS, \
+        _MOVE_PATTERN
     _MOVE_RADIUS = move_radius
     _RADIUS_0 = r0
     _RADIUS_1 = r1
@@ -92,7 +97,9 @@ class Cat:
         point = tm.vec2([ti.random() * _PLATE_WIDTH, ti.random() * _PLATE_HEIGHT])
         self.radius = cat_r
         self._set_point(point)
-        self.prev_point = move_pattern_random(self.point, _MOVE_RADIUS, _PLATE_WIDTH, _PLATE_HEIGHT)
+        self.prev_point = move_pattern_random(
+            self.point, _MOVE_RADIUS, _PLATE_WIDTH, _PLATE_HEIGHT
+        )
         self.color = _COLOR_LEVEL_NO
         self.move_pattern = _MOVE_PATTERN
 
@@ -102,14 +109,20 @@ class Cat:
         point = self.point
 
         if self.move_pattern == MOVE_PATTERN_RANDOM_ID:
-            point = move_pattern_random(self.point, _MOVE_RADIUS, _PLATE_WIDTH, _PLATE_HEIGHT)
+            point = move_pattern_random(
+                self.point, _MOVE_RADIUS, _PLATE_WIDTH, _PLATE_HEIGHT
+            )
             self._set_point(point)
 
         elif self.move_pattern == MOVE_PATTERN_LINE_ID:
-            point = move_pattern_line(self.point, self.prev_point, _MOVE_RADIUS, _PLATE_WIDTH, _PLATE_HEIGHT)
+            point = move_pattern_line(
+                self.point, self.prev_point, _MOVE_RADIUS, _PLATE_WIDTH, _PLATE_HEIGHT
+            )
 
         elif self.move_pattern == MOVE_PATTERN_PHIS_ID:
-            point = move_pattern_phis(self.point, self.prev_point, _PLATE_WIDTH, _PLATE_HEIGHT)
+            point = move_pattern_phis(
+                self.point, self.prev_point, _PLATE_WIDTH, _PLATE_HEIGHT
+            )
 
         self.prev_point = tm.vec2([self.point[0], self.point[1]])
         self._set_point(point)

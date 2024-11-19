@@ -1,8 +1,14 @@
-import taichi as ti
 import taichi.math as tm
+import taichi as ti
 from cat_simulation.constants import *
 from cat_simulation.grid import setup_grid, update_statuses
-from tests.helper import init_consts, init_cats_with_custom_points, init_cats, set_cat_init_positions, primitive_update_states
+from helper import (
+    init_consts,
+    init_cats_with_custom_points,
+    init_cats,
+    set_cat_init_positions,
+    primitive_update_states,
+)
 import pytest
 
 
@@ -47,10 +53,10 @@ class TestUpdateStatus:
             (10000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
             (10000, 2, 8, 1, 1500, 2000, EUCLIDEAN_DISTANCE),
             (50000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
-        ]
+        ],
     )
     def test_naive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
-        setup_grid(N, R1, WIDTH, HEIGHT)
+        setup_grid(cat_n=N, r1=R1, width=WIDTH, height=HEIGHT)
         F_CATS = init_cats(N, R0, R1, WIDTH, HEIGHT)
         set_cat_init_positions(N, RADIUS, F_CATS)
 
