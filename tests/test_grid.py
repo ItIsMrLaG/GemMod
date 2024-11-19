@@ -1,7 +1,7 @@
 import taichi.math as tm
 import taichi as ti
-from cat_simulation.constants import *
 from cat_simulation.grid import setup_grid, update_statuses
+import cat_simulation.constants as const
 from helper import (
     init_consts,
     init_cats_with_custom_points,
@@ -23,21 +23,21 @@ class TestUpdateStatus:
         F_POINTS[4] = tm.vec2(50.0, 50.0)
         init_cats_with_custom_points(N, F_CATS, F_POINTS, RADIUS)
         setup_grid(N, 8.0, 50.0, 50.0)
-        update_statuses(F_CATS, EUCLIDEAN_DISTANCE)
+        update_statuses(F_CATS, const.EUCLIDEAN_DISTANCE)
 
         expected_statuses = [
-            INTERACTION_LEVEL_0,
-            INTERACTION_LEVEL_0,
-            INTERACTION_LEVEL_1,
-            INTERACTION_NO,
-            INTERACTION_NO,
+            const.INTERACTION_LEVEL_0,
+            const.INTERACTION_LEVEL_0,
+            const.INTERACTION_LEVEL_1,
+            const.INTERACTION_NO,
+            const.INTERACTION_NO,
         ]
         expected_colors = [
-            RED_COLOR,
-            RED_COLOR,
-            YELLOW_COLOR,
-            GREEN_COLOR,
-            GREEN_COLOR,
+            const.RED_COLOR,
+            const.RED_COLOR,
+            const.YELLOW_COLOR,
+            const.GREEN_COLOR,
+            const.GREEN_COLOR,
         ]
 
         for i in range(N):
@@ -47,12 +47,12 @@ class TestUpdateStatus:
     @pytest.mark.parametrize(
         "N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type",
         [
-            (10, 2, 8, 1, 100, 100, EUCLIDEAN_DISTANCE),
-            (100, 2, 8, 1, 500, 500, EUCLIDEAN_DISTANCE),
-            (1000, 2, 8, 1, 500, 500, EUCLIDEAN_DISTANCE),
-            (10000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
-            (10000, 2, 8, 1, 1500, 2000, EUCLIDEAN_DISTANCE),
-            (50000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
+            (10, 2, 8, 1, 100, 100, const.EUCLIDEAN_DISTANCE),
+            (100, 2, 8, 1, 500, 500, const.EUCLIDEAN_DISTANCE),
+            (1000, 2, 8, 1, 500, 500, const.EUCLIDEAN_DISTANCE),
+            (10000, 2, 8, 1, 1000, 1000, const.EUCLIDEAN_DISTANCE),
+            (10000, 2, 8, 1, 1500, 2000, const.EUCLIDEAN_DISTANCE),
+            (50000, 2, 8, 1, 1000, 1000, const.EUCLIDEAN_DISTANCE),
         ],
     )
     def test_naive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):

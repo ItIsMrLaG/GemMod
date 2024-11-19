@@ -27,14 +27,14 @@ contains Cats ids:
 """
 _F_CELL_STORAGE: Any
 
-""" 
+"""
 contains Head for each cell:
     - size := cell_n + 1
     - if element_i is Head_i then element_{i+1} is Tail_i
-    - { j } from [Head_i ; Tail_i) 
-        ==> cat_id := F_CELL_STORAGE[j] 
-        ==> cat := F_CATS[cat_id] 
-        ==> cat in Cell_i   
+    - { j } from [Head_i ; Tail_i)
+        ==> cat_id := F_CELL_STORAGE[j]
+        ==> cat := F_CATS[cat_id]
+        ==> cat in Cell_i
 """
 _F_CELL_HEADS: Any
 

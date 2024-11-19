@@ -1,7 +1,18 @@
 from cat_simulation.cat import init_cat_env, Cat
 import taichi as ti
 from cat_simulation.tools import get_distance
-from cat_simulation.constants import *
+from cat_simulation.constants import (
+    # LEVELS #
+    INTERACTION_LEVEL_0,
+    INTERACTION_LEVEL_1,
+    INTERACTION_NO,
+    # PATTERNS #
+    MOVE_PATTERN_RANDOM_ID,
+    # COLORS #
+    RED_COLOR,
+    YELLOW_COLOR,
+    GREEN_COLOR,
+)
 
 
 def init_cats(n, r0, r1, width, height):
