@@ -2,7 +2,6 @@ import math
 from typing import Any
 
 import taichi as ti
-# from cat_simulation.constants import *
 
 __all__ = [
     "setup_grid",
@@ -49,15 +48,15 @@ _F_CAT_PER_CELL: Any
 
 def setup_grid(
     cat_n: ti.i32,
-    radius1: ti.i32,
-    plate_width: ti.i32,
-    plate_height: ti.i32
+    r1: ti.i32,
+    width: ti.i32,
+    height: ti.i32
 ):
     global _CATS_N, _RADIUS_1, _PLATE_WIDTH, _PLATE_HEIGHT
     _CATS_N = cat_n
-    _RADIUS_1 = radius1
-    _PLATE_WIDTH = plate_width
-    _PLATE_HEIGHT = plate_height
+    _RADIUS_1 = r1
+    _PLATE_WIDTH = width
+    _PLATE_HEIGHT = height
 
     global _CELL_N, _GRID_COL_N, _GRID_ROW_N, _CELL_SZ
     _CELL_SZ = _RADIUS_1
