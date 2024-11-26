@@ -50,7 +50,28 @@ def set_cat_init_positions(cats: ti.template()):
         cats[idx].init_cat(cfg.CAT_RADIUS)
 
 
+def validate_config():
+    if cfg.PLATE_HEIGHT <= 0 or cfg.PLATE_WIDTH <= 0:
+        raise ValueError("Plate height/width must be > 0")
+
+    if cfg.CATS_N <= 0:
+        raise ValueError("Number of cats must be > 0")
+
+    if (
+        cfg.CAT_RADIUS <= 0
+        or cfg.MOVE_RADIUS <= 0
+        or cfg.RADIUS_0 <= 0
+        or cfg.RADIUS_1 <= 0
+    ):
+        raise ValueError("Radii must be > 0")
+
+    if cfg.RADIUS_1 <= cfg.RADIUS_0:
+        raise ValueError("Radius 1 must be > Radius 0")
+
+
 def main():
+    validate_config()
+
     init_cat_env(
         move_radius=cfg.MOVE_RADIUS,
         r0=cfg.RADIUS_0,

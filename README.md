@@ -64,7 +64,6 @@ rye run python -m src.catsim
 > **Пример:**
 > ```python
 > PLATE_WIDTH, PLATE_HEIGHT = 2000, 2000
-> PLATE_H_MIN, PLATE_W_MIN = 0, 0
 > CATS_N = 500000
 > ...
 > ```
