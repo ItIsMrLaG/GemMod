@@ -2,29 +2,49 @@ import pytest
 import taichi as ti
 import taichi.math as tm
 from helper import (
-    init_cats,
     init_cats_with_custom_points,
-    init_consts,
     primitive_update_states,
     set_cat_init_positions,
 )
 
 import catsim.constants as const
+from catsim.cat import Cat, init_cat_env
+from catsim.constants import DISABLE_PROB_INTER, MOVE_PATTERN_RANDOM_ID
 from catsim.grid import setup_grid, update_statuses
 
 
 @ti.data_oriented
 class TestUpdateStatus:
     def test_concrete_case(self):
-        F_CATS, F_POINTS, RADIUS, N = init_consts(5, 1, 2, 8, 50, 50)
-        F_POINTS[0] = tm.vec2(0.0, 0.0)
-        F_POINTS[1] = tm.vec2(2.0, 0.0)
-        F_POINTS[2] = tm.vec2(8.0, 0.0)
-        F_POINTS[3] = tm.vec2(10.0, 10.0)
-        F_POINTS[4] = tm.vec2(50.0, 50.0)
-        init_cats_with_custom_points(N, F_CATS, F_POINTS, RADIUS)
-        setup_grid(N, 8.0, 50.0, 50.0)
-        update_statuses(F_CATS, const.EUCLIDEAN_DISTANCE)
+        N, RADIUS, R0, R1, WIDTH, HEIGHT = 5, 1, 2, 8, 50, 50
+
+        init_cat_env(
+            move_radius=R0,
+            r0=R0,
+            r1=R1,
+            width=WIDTH,
+            height=HEIGHT,
+            move_pattern=MOVE_PATTERN_RANDOM_ID,
+            prob_inter=DISABLE_PROB_INTER,
+        )
+
+        points = ti.Vector.field(n=2, dtype=float, shape=(N,))
+        points[0] = tm.vec2(0.0, 0.0)
+        points[1] = tm.vec2(2.0, 0.0)
+        points[2] = tm.vec2(8.0, 0.0)
+        points[3] = tm.vec2(10.0, 10.0)
+        points[4] = tm.vec2(50.0, 50.0)
+
+        cats = Cat.field(shape=(N,))
+        init_cats_with_custom_points(
+            n=N,
+            radius=RADIUS,
+            cats=cats,
+            points=points,
+        )
+
+        setup_grid(N, float(R1), float(WIDTH), float(HEIGHT))
+        update_statuses(cats, const.EUCLIDEAN_DISTANCE)
 
         expected_statuses = [
             const.INTERACTION_LEVEL_0,
@@ -33,17 +53,9 @@ class TestUpdateStatus:
             const.INTERACTION_NO,
             const.INTERACTION_NO,
         ]
-        expected_colors = [
-            const.RED_COLOR,
-            const.RED_COLOR,
-            const.YELLOW_COLOR,
-            const.GREEN_COLOR,
-            const.GREEN_COLOR,
-        ]
 
         for i in range(N):
-            assert F_CATS[i].status == expected_statuses[i]
-            assert F_CATS[i].color == expected_colors[i]
+            assert cats[i].status == expected_statuses[i]
 
     @pytest.mark.parametrize(
         "N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type",
@@ -58,11 +70,24 @@ class TestUpdateStatus:
     )
     def test_primitive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
         setup_grid(cat_n=N, r1=R1, width=WIDTH, height=HEIGHT)
-        F_CATS = init_cats(N, R0, R1, WIDTH, HEIGHT)
-        set_cat_init_positions(N, RADIUS, F_CATS)
+
+        init_cat_env(
+            move_radius=R0,
+            r0=R0,
+            r1=R1,
+            width=WIDTH,
+            height=HEIGHT,
+            move_pattern=MOVE_PATTERN_RANDOM_ID,
+            prob_inter=DISABLE_PROB_INTER,
+        )
+
+        cats = Cat.field(shape=(N,))
+        set_cat_init_positions(N, RADIUS, cats)
 
         expected_statuses = ti.ndarray(dtype=ti.i32, shape=(N,))
-        primitive_update_states(N, F_CATS, expected_statuses, distance_type, R0, R1)
-        update_statuses(F_CATS, distance_type)
+        primitive_update_states(N, cats, expected_statuses, distance_type, R0, R1)
+
+        update_statuses(cats, distance_type)
+
         for i in range(N):
-            assert F_CATS[i].status == expected_statuses[i]
+            assert cats[i].status == expected_statuses[i]

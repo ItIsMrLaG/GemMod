@@ -1,43 +1,21 @@
 import taichi as ti
 
 import catsim.constants as const
-from catsim.cat import Cat, init_cat_env
 from catsim.tools import get_distance
-
-
-def init_cats(n, r0, r1, width, height):
-    init_cat_env(
-        r0,
-        r0,
-        r1,
-        width,
-        height,
-        const.MOVE_PATTERN_RANDOM_ID,
-        const.RED_COLOR,
-        const.YELLOW_COLOR,
-        const.GREEN_COLOR,
-        const.DISABLE_PROB_INTER,
-    )
-    cats = Cat.field(shape=(n,))
-    return cats
-
-
-def init_consts(n, radius, r0, r1, width, height):
-    cats = init_cats(n, r0, r1, width, height)
-    points = ti.Vector.field(n=2, dtype=float, shape=(n,))
-    return cats, points, radius, n
 
 
 @ti.kernel
 def init_cats_with_custom_points(
-    n: ti.i32, cats: ti.template(), points: ti.template(), radius: ti.f32
+    n: ti.i32,
+    radius: ti.f32,
+    cats: ti.template(),
+    points: ti.template(),
 ):
     for i in range(n):
         cats[i].radius = radius
         cats[i]._set_point(points[i])
         cats[i].move_pattern = const.MOVE_PATTERN_RANDOM_ID
         cats[i].status = const.INTERACTION_NO
-        cats[i].color = const.GREEN_COLOR
 
 
 @ti.kernel
