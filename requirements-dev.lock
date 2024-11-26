@@ -39,16 +39,16 @@ platformdirs==4.3.6
 pluggy==1.5.0
     # via pytest
 pre-commit==4.0.1
-    # via cat-simulation
+    # via catsim
 pygments==2.18.0
     # via rich
 pytest==8.3.3
-    # via cat-simulation
+    # via catsim
 pyyaml==6.0.2
     # via pre-commit
 rich==13.9.4
     # via taichi
 taichi==1.7.2
-    # via cat-simulation
+    # via catsim
 virtualenv==20.27.1
     # via pre-commit

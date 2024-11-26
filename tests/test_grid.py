@@ -1,15 +1,16 @@
-import taichi.math as tm
-import taichi as ti
-from cat_simulation.grid import setup_grid, update_statuses
-import cat_simulation.constants as const
-from helper import (
-    init_consts,
-    init_cats_with_custom_points,
-    init_cats,
-    set_cat_init_positions,
-    primitive_update_states,
-)
 import pytest
+import taichi as ti
+import taichi.math as tm
+from helper import (
+    init_cats,
+    init_cats_with_custom_points,
+    init_consts,
+    primitive_update_states,
+    set_cat_init_positions,
+)
+
+import catsim.constants as const
+from catsim.grid import setup_grid, update_statuses
 
 
 @ti.data_oriented

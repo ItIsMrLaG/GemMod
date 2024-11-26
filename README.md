@@ -55,7 +55,7 @@ rye sync && rye run pre-commit install
 ### Запуск
 
 ```bash
-rye run python -m src.catradar
+rye run python -m src.catsim
 ```
 
 > На текущий момент настройка параметров запуска происходит только через конфигурационный

@@ -1,9 +1,9 @@
 import taichi as ti
 import taichi.math as tm
 
-from cat_simulation.constants import (
-    MANHATTAN_DISTANCE,
+from catsim.constants import (
     CHEBYSHEV_DISTANCE,
+    MANHATTAN_DISTANCE,
 )
 
 

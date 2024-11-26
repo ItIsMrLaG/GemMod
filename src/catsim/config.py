@@ -1,4 +1,4 @@
-import cat_simulation.constants as const
+import catsim.constants as const
 
 # ----- GENERAL ----- #
 PLATE_WIDTH, PLATE_HEIGHT = 2000, 2000
@@ -21,4 +21,4 @@ COLOR_LEVEL_1 = const.YELLOW_COLOR
 COLOR_LEVEL_NO = const.GREEN_COLOR
 
 # ----- PROBABILISTIC INTERACTION ----- #
-PROB_INTERACTION = const.ENABLE_PROB_INTER
+PROB_INTERACTION = const.DISABLE_PROB_INTER

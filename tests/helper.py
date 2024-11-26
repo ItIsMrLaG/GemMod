@@ -1,7 +1,8 @@
-from cat_simulation.cat import init_cat_env, Cat
 import taichi as ti
-from cat_simulation.tools import get_distance
-import cat_simulation.constants as const
+
+import catsim.constants as const
+from catsim.cat import Cat, init_cat_env
+from catsim.tools import get_distance
 
 
 def init_cats(n, r0, r1, width, height):

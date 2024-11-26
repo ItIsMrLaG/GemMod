@@ -1,5 +1,5 @@
 [project]
-name = "cat-simulation"
+name = "catsim"
 version = "0.1.0"
 description = "Cats simulator"
 authors = [
@@ -27,4 +27,4 @@ dev-dependencies = []
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/cat_simulation"]
+packages = ["src/catsim"]

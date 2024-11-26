@@ -1,23 +1,23 @@
 import taichi as ti
 import taichi.math as tm
 
-from cat_simulation.tools import (
-    get_distance,
-    move_pattern_random,
-    move_pattern_line,
-    move_pattern_phis,
-)
-from cat_simulation.constants import (
+from catsim.constants import (
+    # PROBABILISTIC INTERACTION #
+    ENABLE_PROB_INTER,
     # LEVELS #
     INTERACTION_LEVEL_0,
     INTERACTION_LEVEL_1,
     INTERACTION_NO,
     # PATTERNS #
-    MOVE_PATTERN_RANDOM_ID,
     MOVE_PATTERN_LINE_ID,
     MOVE_PATTERN_PHIS_ID,
-    # PROBABILISTIC INTERACTION #
-    ENABLE_PROB_INTER,
+    MOVE_PATTERN_RANDOM_ID,
+)
+from catsim.tools import (
+    get_distance,
+    move_pattern_line,
+    move_pattern_phis,
+    move_pattern_random,
 )
 
 _RADIUS_0: ti.f32

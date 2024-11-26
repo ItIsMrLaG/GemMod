@@ -1,8 +1,8 @@
 import taichi as ti
-import cat_simulation.run_config as cfg
 
-from cat_simulation.cat import Cat, init_cat_env
-from cat_simulation.grid import setup_grid, update_statuses
+import catsim.config as cfg
+from catsim.cat import Cat, init_cat_env
+from catsim.grid import setup_grid, update_statuses
 
 F_CATS = Cat.field(shape=(cfg.CATS_N,))
 GUI = ti.GUI("cat simulation", res=(cfg.PLATE_WIDTH, cfg.PLATE_HEIGHT))
