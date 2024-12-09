@@ -4,6 +4,7 @@ import taichi.math as tm
 from catsim.constants import (
     CHEBYSHEV_DISTANCE,
     MANHATTAN_DISTANCE,
+    EPS,
 )
 
 
@@ -34,6 +35,122 @@ def get_distance(p1: tm.vec2, p2: tm.vec2, distance_type: ti.i32) -> ti.f32:
         ans = euclidean_distance(p1, p2)
 
     return ans
+
+
+@ti.kernel
+def get_distance_py(p1: tm.vec2, p2: tm.vec2, distance_type: ti.i32) -> ti.f32:
+    return get_distance(p1, p2, distance_type)
+
+
+@ti.func
+def is_boundary_point(p: tm.vec2, max_x: ti.f32, max_y: ti.f32) -> ti.i8:
+    min_y = 0.0
+    min_x = 0.0
+    ret = 0
+
+    """    4
+      -----------
+    1 |  field  | 3
+      -----------
+           2         """
+    # TODO: add assert (width and height > 10 maybe)
+
+    if p[0] <= min_x + EPS:
+        ret = 1
+    if max_x - EPS <= p[0]:
+        ret = 3
+
+    if p[1] <= min_y + EPS:
+        ret = 2
+    if max_y - EPS <= p[1]:
+        ret = 4
+
+    return ret
+
+
+@ti.func
+def get_sides_distance(
+    p1: tm.vec2,
+    p2: tm.vec2,
+    right_bound: ti.f32,
+    upper_bound: ti.f32,
+    distance_type: ti.i32,
+) -> ti.f32:
+    p1_mark = is_boundary_point(p1, right_bound, upper_bound)
+    p2_mark = is_boundary_point(p2, right_bound, upper_bound)
+    assert p1_mark and p2_mark
+
+    ret: ti.f32 = -1
+
+    x0_y0 = tm.vec2([0, 0])
+    xn_y0 = tm.vec2([right_bound, 0])
+    x0_yn = tm.vec2([0, upper_bound])
+    xn_yn = tm.vec2([right_bound, upper_bound])
+
+    # SAME SIDE
+    if p1_mark == p2_mark:
+        ret = get_distance(p1, p2, distance_type)
+
+    # OPPOSITE SIDES
+    elif p1_mark % 2 == p2_mark % 2:
+        _height_dist = get_distance(x0_y0, x0_yn, distance_type)
+        _width_dist = get_distance(x0_y0, xn_y0, distance_type)
+        _adding_dist = _height_dist * ((p1_mark + 1) % 2) + _width_dist * (p1_mark % 2)
+
+        """        4
+             *b*-------+c+
+            1 |  field  | 3
+             +a+-------*d*
+                   2
+        *b* == attr_p1 | +a+ == x0_y0
+        *d* == attr_p2 | +c+ == xn_yn
+        """
+
+        attr_p1 = x0_yn * ((p1_mark + 1) % 2) + xn_y0 * (p1_mark % 2)
+        attr_p2 = xn_y0 * ((p1_mark + 1) % 2) + x0_yn * (p1_mark % 2)
+
+        _p1 = p1
+        _p2 = p2
+        if p1_mark > p2_mark:
+            _p1 = p2
+            _p2 = p1
+
+        _attr_dist1 = get_distance(x0_y0, _p1, distance_type) + get_distance(
+            attr_p1, _p2, distance_type
+        )
+        _attr_dist2 = get_distance(xn_yn, _p2, distance_type) + get_distance(
+            attr_p2, _p1, distance_type
+        )
+        _attr_dist = tm.min(_attr_dist1, _attr_dist2)
+
+        ret = _adding_dist + _attr_dist
+
+    # NEIGHBORING SIDES
+    else:
+        """        4
+             (b)-------(c)
+            1 |  field  | 3
+             (a)-------(d)
+                   2
+           (b) = 5 | (d) = 5
+           (a) = 3 | (c) = 7
+        """
+
+        _corn_p1, _corn_p2 = x0_y0, xn_yn
+
+        if p1_mark + p2_mark == 5:
+            _corn_p1, _corn_p2 = x0_yn, xn_y0
+
+        _dist1 = get_distance(_corn_p1, p1, distance_type) + get_distance(
+            _corn_p1, p2, distance_type
+        )
+        _dist2 = get_distance(_corn_p2, p1, distance_type) + get_distance(
+            _corn_p2, p2, distance_type
+        )
+        ret = tm.min(_dist1, _dist2)
+
+    assert ret >= 0
+    return ret
 
 
 @ti.func
@@ -100,3 +217,9 @@ def move_pattern_phis(
         n_point_[1] -= delta[1]
 
     return n_point_
+
+
+@ti.kernel
+def init_cats(cats_n: ti.i32, cat_radius: ti.f32, cats: ti.template(), v_st: ti.i8):
+    for idx in range(cats_n):
+        cats[idx].init_cat(idx, cat_radius, visibility_status=v_st)

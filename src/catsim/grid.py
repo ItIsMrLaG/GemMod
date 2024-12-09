@@ -113,9 +113,10 @@ def init_cell_storage(cats: ti.template()):
 
 
 @ti.kernel
-def update_statuses(cats: ti.template(), distance_type: ti.i32):
+def update_statuses(cats: ti.template()):
     init_cell_storage(cats)
 
+    ti.loop_config(serialize=True)
     for idx1 in range(_CATS_N):
         cell_idx = ti.floor(cats[idx1].point / _CELL_SZ, ti.i32)
 
@@ -134,4 +135,4 @@ def update_statuses(cats: ti.template(), distance_type: ti.i32):
                     idx2 = _F_CELL_STORAGE[_idx2]
 
                     if idx1 != idx2:
-                        cats[idx1].fight_with(cats[idx2], distance_type)
+                        cats[idx1].fight_with(cats[idx2])
