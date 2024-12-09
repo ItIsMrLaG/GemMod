@@ -1,15 +1,20 @@
 import pytest
 import taichi as ti
 import taichi.math as tm
+from catsim.spawner import Spawner
+
 from helper import (
     init_cats_with_custom_points,
     primitive_update_states,
-    set_cat_init_positions,
 )
 
 import catsim.constants as const
 from catsim.cat import Cat, init_cat_env
-from catsim.constants import DISABLE_PROB_INTER, MOVE_PATTERN_RANDOM_ID
+from catsim.constants import (
+    DISABLE_PROB_INTER,
+    MOVE_PATTERN_RANDOM_ID,
+    DISABLE_BORDER_INTER,
+)
 from catsim.grid import setup_grid, update_statuses
 
 
@@ -26,6 +31,8 @@ class TestUpdateStatus:
             height=HEIGHT,
             move_pattern=MOVE_PATTERN_RANDOM_ID,
             prob_inter=DISABLE_PROB_INTER,
+            border_inter=DISABLE_BORDER_INTER,
+            distance_type=const.EUCLIDEAN_DISTANCE,
         )
 
         points = ti.Vector.field(n=2, dtype=float, shape=(N,))
@@ -44,7 +51,7 @@ class TestUpdateStatus:
         )
 
         setup_grid(N, float(R1), float(WIDTH), float(HEIGHT))
-        update_statuses(cats, const.EUCLIDEAN_DISTANCE)
+        update_statuses(cats)
 
         expected_statuses = [
             const.INTERACTION_LEVEL_0,
@@ -79,15 +86,24 @@ class TestUpdateStatus:
             height=HEIGHT,
             move_pattern=MOVE_PATTERN_RANDOM_ID,
             prob_inter=DISABLE_PROB_INTER,
+            border_inter=DISABLE_BORDER_INTER,
+            distance_type=distance_type,
         )
 
         cats = Cat.field(shape=(N,))
-        set_cat_init_positions(N, RADIUS, cats)
+        spawner = Spawner(
+            width=WIDTH,
+            height=HEIGHT,
+            cats_n=N,
+            cat_radius=RADIUS,
+            cats=cats,
+        )
+        spawner.set_cat_init_positions(N, const.RANDOM_SEED)
 
         expected_statuses = ti.ndarray(dtype=ti.i32, shape=(N,))
         primitive_update_states(N, cats, expected_statuses, distance_type, R0, R1)
 
-        update_statuses(cats, distance_type)
+        update_statuses(cats)
 
         for i in range(N):
             assert cats[i].status == expected_statuses[i]
