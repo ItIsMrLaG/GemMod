@@ -47,4 +47,3 @@ ALWAYS_INVISIBLE: ti.i8 = 4
 
 # ----- SPAWN SEED ----- #
 RANDOM_SEED = 0
-BORDER_SEED = 1

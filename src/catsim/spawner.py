@@ -4,7 +4,6 @@ import taichi as ti
 import taichi.math as tm
 from catsim.constants import (
     NEVER_APPEARED,
-    BORDER_SEED,
     VISIBLE,
     ALWAYS_VISIBLE,
 )
@@ -41,19 +40,8 @@ class Spawner:
         self.cats[idx].set_point(point)
 
     @ti.func
-    def _circle_spawn_seed(self, idx: ti.i32):
-        pass  # todo:
-
-    @ti.func
-    def _border_spawn_seed(self, idx: ti.i32):
-        pass  # todo:
-
-    @ti.func
     def _spawn_seed(self, idx: ti.i32, spawn_tp: ti.i32):
-        if spawn_tp == BORDER_SEED:
-            self._border_spawn_seed(idx)
-        else:  # RANDOM_SEED
-            self._random_spawn_seed(idx)
+        self._random_spawn_seed(idx)
 
     @ti.kernel
     def set_always_visible_cat(self, idx: ti.i32, spawn_tp: ti.i32):
