@@ -66,6 +66,12 @@ class TestUpdateStatus:
             (10000, 2, 8, 1, 1000, 1000, const.EUCLIDEAN_DISTANCE),
             (10000, 2, 8, 1, 1500, 2000, const.EUCLIDEAN_DISTANCE),
             (50000, 2, 8, 1, 1000, 1000, const.EUCLIDEAN_DISTANCE),
+            # other metrics + change order between r0 and r1
+            (10, 2, 2, 1, 100, 100, const.CHEBYSHEV_DISTANCE),
+            (10, 8, 2, 1, 100, 100, const.MANHATTAN_DISTANCE),
+            # map corner cases: 1x1 map, "line" map
+            (100000, 1, 1, 1, 1, 1, const.EUCLIDEAN_DISTANCE),
+            (10000, 10, 1, 1, 1000, 1, const.EUCLIDEAN_DISTANCE),
         ],
     )
     def test_primitive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
