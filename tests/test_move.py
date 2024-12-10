@@ -31,6 +31,11 @@ class TestMovePattern:
             (42, 17, 15),
             (59, 10, 45),
             (1, 2, 10),
+            # some corner cases
+            (1, 1, 100000),
+            (0, 0, 1),
+            (-100, -100, -1),
+            (10, 50, 0),
         ],
     )
     def test_move_radius(self, x: int, y: int, move_radius: int):
