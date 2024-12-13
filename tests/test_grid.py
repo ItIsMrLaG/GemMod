@@ -1,21 +1,21 @@
 import pytest
 import taichi as ti
 import taichi.math as tm
-from catsim.spawner import Spawner
-
 from helper import (
     init_cats_with_custom_points,
     primitive_update_states,
 )
 
-import catsim.constants as const
 from catsim.cat import Cat, init_cat_env
-from catsim.constants import (
-    DISABLE_PROB_INTER,
-    MOVE_PATTERN_RANDOM_ID,
-    DISABLE_BORDER_INTER,
+from catsim.enums import (
+    EUCLIDEAN_DISTANCE,
+    INTERACTION_LEVEL_0,
+    INTERACTION_LEVEL_1,
+    INTERACTION_NO,
+    MOVE_PATTERN_RANDOM,
 )
 from catsim.grid import setup_grid, update_statuses
+from catsim.spawner import Spawner
 
 
 @ti.data_oriented
@@ -29,10 +29,10 @@ class TestUpdateStatus:
             r1=R1,
             width=WIDTH,
             height=HEIGHT,
-            move_pattern=MOVE_PATTERN_RANDOM_ID,
-            prob_inter=DISABLE_PROB_INTER,
-            border_inter=DISABLE_BORDER_INTER,
-            distance_type=const.EUCLIDEAN_DISTANCE,
+            move_pattern=MOVE_PATTERN_RANDOM,
+            prob_inter=False,
+            border_inter=False,
+            distance_type=EUCLIDEAN_DISTANCE,
         )
 
         points = ti.Vector.field(n=2, dtype=float, shape=(N,))
@@ -54,11 +54,11 @@ class TestUpdateStatus:
         update_statuses(cats)
 
         expected_statuses = [
-            const.INTERACTION_LEVEL_0,
-            const.INTERACTION_LEVEL_0,
-            const.INTERACTION_LEVEL_1,
-            const.INTERACTION_NO,
-            const.INTERACTION_NO,
+            INTERACTION_LEVEL_0,
+            INTERACTION_LEVEL_0,
+            INTERACTION_LEVEL_1,
+            INTERACTION_NO,
+            INTERACTION_NO,
         ]
 
         for i in range(N):
@@ -67,12 +67,12 @@ class TestUpdateStatus:
     @pytest.mark.parametrize(
         "N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type",
         [
-            (10, 2, 8, 1, 100, 100, const.EUCLIDEAN_DISTANCE),
-            (100, 2, 8, 1, 500, 500, const.EUCLIDEAN_DISTANCE),
-            (1000, 2, 8, 1, 500, 500, const.EUCLIDEAN_DISTANCE),
-            (10000, 2, 8, 1, 1000, 1000, const.EUCLIDEAN_DISTANCE),
-            (10000, 2, 8, 1, 1500, 2000, const.EUCLIDEAN_DISTANCE),
-            (50000, 2, 8, 1, 1000, 1000, const.EUCLIDEAN_DISTANCE),
+            (10, 2, 8, 1, 100, 100, EUCLIDEAN_DISTANCE),
+            (100, 2, 8, 1, 500, 500, EUCLIDEAN_DISTANCE),
+            (1000, 2, 8, 1, 500, 500, EUCLIDEAN_DISTANCE),
+            (10000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
+            (10000, 2, 8, 1, 1500, 2000, EUCLIDEAN_DISTANCE),
+            (50000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
         ],
     )
     def test_primitive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
@@ -84,9 +84,9 @@ class TestUpdateStatus:
             r1=R1,
             width=WIDTH,
             height=HEIGHT,
-            move_pattern=MOVE_PATTERN_RANDOM_ID,
-            prob_inter=DISABLE_PROB_INTER,
-            border_inter=DISABLE_BORDER_INTER,
+            move_pattern=MOVE_PATTERN_RANDOM,
+            prob_inter=False,
+            border_inter=False,
             distance_type=distance_type,
         )
 
@@ -98,7 +98,7 @@ class TestUpdateStatus:
             cat_radius=RADIUS,
             cats=cats,
         )
-        spawner.set_cat_init_positions(N, const.RANDOM_SEED)
+        spawner.set_cat_init_positions(N, 0)
 
         expected_statuses = ti.ndarray(dtype=ti.i32, shape=(N,))
         primitive_update_states(N, cats, expected_statuses, distance_type, R0, R1)

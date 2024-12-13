@@ -1,5 +1,11 @@
 import taichi as ti
-import catsim.constants as const
+
+from catsim.enums import (
+    INTERACTION_LEVEL_0,
+    INTERACTION_LEVEL_1,
+    INTERACTION_NO,
+    MOVE_PATTERN_RANDOM,
+)
 from catsim.tools import get_distance
 
 
@@ -13,8 +19,8 @@ def init_cats_with_custom_points(
     for i in range(n):
         cats[i].radius = radius
         cats[i].set_point(points[i])
-        cats[i].move_pattern = const.MOVE_PATTERN_RANDOM_ID
-        cats[i].status = const.INTERACTION_NO
+        cats[i].move_pattern = MOVE_PATTERN_RANDOM
+        cats[i].status = INTERACTION_NO
 
 
 @ti.kernel
@@ -38,8 +44,8 @@ def primitive_update_states(
                 continue
             dist = get_distance(cats[i].point, cats[j].point, distance_type)
             if dist <= r0:
-                statuses[i] = const.INTERACTION_LEVEL_0
+                statuses[i] = INTERACTION_LEVEL_0
             elif dist <= r1:
-                statuses[i] = ti.max(const.INTERACTION_LEVEL_1, statuses[i])
+                statuses[i] = ti.max(INTERACTION_LEVEL_1, statuses[i])
             else:
-                statuses[i] = ti.max(const.INTERACTION_NO, statuses[i])
+                statuses[i] = ti.max(INTERACTION_NO, statuses[i])
