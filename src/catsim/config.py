@@ -9,13 +9,16 @@ from catsim.enums import (
 )
 
 PLATE_WIDTH, PLATE_HEIGHT = 1500, 1000
-CATS_N = 10
+CATS_N = 150
 
-# 0 <= FAVORITE_CAT_IDX < CATS_N otherwise favorite cat undefined
+# 0 <= FAVORITE_CAT_IDX < CATS_N
+# otherwise favorite cat not set
 FAVORITE_CAT_IDX = 1
 
+OBSERVABLE_ANGLE_SPAN = ti.math.pi / 4
+
 # ----- CAT ----- #
-CAT_RADIUS = 0.05 * PLATE_HEIGHT
+CAT_RADIUS = 0.02 * PLATE_HEIGHT
 MOVE_RADIUS = CAT_RADIUS * 2
 RADIUS_0 = CAT_RADIUS * 2
 RADIUS_1 = RADIUS_0 * 3
@@ -38,3 +41,8 @@ COLORS_FAV = ti.field(ti.i32, shape=(3,))
 COLORS_FAV[INTERACTION_NO] = 0x45B39D  # light green
 COLORS_FAV[INTERACTION_LEVEL_1] = 0xFAD7A0  # light yellow
 COLORS_FAV[INTERACTION_LEVEL_0] = 0xF1948A  # light red
+
+COLORS_IGN = ti.field(ti.i32, shape=(3,))
+COLORS_IGN[INTERACTION_NO] = 0x333333
+COLORS_IGN[INTERACTION_LEVEL_1] = 0x545454
+COLORS_IGN[INTERACTION_LEVEL_0] = 0x787878

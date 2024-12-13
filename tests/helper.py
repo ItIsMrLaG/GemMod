@@ -5,6 +5,7 @@ from catsim.enums import (
     INTERACTION_LEVEL_1,
     INTERACTION_NO,
     MOVE_PATTERN_RANDOM,
+    VISIBLE,
 )
 from catsim.tools import get_distance
 
@@ -21,6 +22,7 @@ def init_cats_with_custom_points(
         cats[i].set_point(points[i])
         cats[i].move_pattern = MOVE_PATTERN_RANDOM
         cats[i].status = INTERACTION_NO
+        cats[i].visibility_status = VISIBLE
 
 
 @ti.kernel
