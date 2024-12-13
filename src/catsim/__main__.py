@@ -10,27 +10,64 @@ from catsim.enums import (
 from catsim.grid import setup_grid, update_statuses
 from catsim.spawner import Spawner
 
-DCATS = Cat.field(shape=(cfg.CATS_N,))
-
 POINTS = tm.vec2.field(shape=(cfg.CATS_N,))
 COLORS = ti.field(ti.i32, shape=(cfg.CATS_N,))
 RADIUSES = ti.field(ti.f32, shape=(cfg.CATS_N,))
 
+LINES1_BEGIN = tm.vec2.field(shape=(cfg.CATS_N,))
+LINES1_END = tm.vec2.field(shape=(cfg.CATS_N,))
+
+LINES2_BEGIN = tm.vec2.field(shape=(cfg.CATS_N,))
+LINES2_END = tm.vec2.field(shape=(cfg.CATS_N,))
+
+LINE_LENGTH = tm.vec2([cfg.RADIUS_1 / cfg.PLATE_WIDTH, cfg.RADIUS_1 / cfg.PLATE_HEIGHT])
+
 
 @ti.kernel
-def update_dcats(cats: ti.template(), favorite_cat_flag: ti.i32) -> ti.i32:
-    counter: ti.i32 = 0
+def arrange_visuals(
+    cats: ti.template(), observer_exists: bool
+) -> tuple[ti.i32, ti.i32]:
+    cat_idx: ti.i32 = 0
+    line_idx: ti.i32 = 0
+
     for idx in range(cfg.CATS_N):
         cat = cats[idx]
         if cat.visibility_status == VISIBLE or cat.visibility_status == ALWAYS_VISIBLE:
-            addr = ti.atomic_add(counter, 1)
-            POINTS[addr] = cat.norm_point
-            RADIUSES[addr] = cat.radius
+            always_visible = cat.visibility_status == ALWAYS_VISIBLE
 
-            fav = cat.visibility_status == ALWAYS_VISIBLE
-            COLORS[addr] = cfg.COLORS_FAV[cat.status] if fav else cfg.COLORS[cat.status]
+            if always_visible:
+                LINES1_BEGIN[line_idx] = cat.norm_point
+                LINES2_BEGIN[line_idx] = cat.norm_point
 
-    return counter
+                LINES1_END[line_idx][0] = cat.norm_point[0] + LINE_LENGTH[0] * tm.cos(
+                    cat.observable_angle[0]
+                )
+                LINES1_END[line_idx][1] = cat.norm_point[1] + LINE_LENGTH[1] * tm.sin(
+                    cat.observable_angle[0]
+                )
+
+                LINES2_END[line_idx][0] = cat.norm_point[0] + LINE_LENGTH[0] * tm.cos(
+                    cat.observable_angle[1]
+                )
+                LINES2_END[line_idx][1] = cat.norm_point[1] + LINE_LENGTH[1] * tm.sin(
+                    cat.observable_angle[1]
+                )
+
+                ti.atomic_add(line_idx, 1)
+
+            POINTS[cat_idx] = cat.norm_point
+            RADIUSES[cat_idx] = cat.radius
+            COLORS[cat_idx] = (
+                cfg.COLORS_FAV[cat.status]
+                if always_visible
+                else cfg.COLORS[cat.status]
+                if cat.observed or (not observer_exists)
+                else cfg.COLORS_IGN[cat.status]
+            )
+
+            ti.atomic_add(cat_idx, 1)
+
+    return cat_idx, line_idx
 
 
 @ti.kernel
@@ -39,36 +76,35 @@ def move_cats(cats: ti.template()):
         cats[idx].move()
 
 
-def mainloop(cats: ti.template(), spawner: Spawner):
-    GUI = ti.GUI("catsim", res=(cfg.PLATE_WIDTH, cfg.PLATE_HEIGHT))
-
-    favorite_cat_flag = 0 <= cfg.FAVORITE_CAT_IDX < cfg.CATS_N
-    spawner.set_cat_init_positions(cfg.CATS_N, 0)
-
-    if favorite_cat_flag:
-        spawner.set_always_visible_cat(cfg.FAVORITE_CAT_IDX, 0)
-
-    while GUI.running:
+def mainloop(cats: ti.template(), fav_cat_exists: bool, gui: ti.GUI):
+    while gui.running:
         move_cats(cats)
         update_statuses(cats)
 
-        counter = update_dcats(cats, favorite_cat_flag)
-        if counter == 0:
+        count_cats, count_lines = arrange_visuals(cats, fav_cat_exists)
+        if count_cats == 0:
             continue
 
-        GUI.circles(
-            pos=POINTS.to_numpy()[0:counter],
-            radius=RADIUSES.to_numpy()[0:counter],
-            color=COLORS.to_numpy()[0:counter],
+        gui.circles(
+            pos=POINTS.to_numpy()[:count_cats],
+            radius=RADIUSES.to_numpy()[:count_cats],
+            color=COLORS.to_numpy()[:count_cats],
         )
 
-        GUI.show()
+        if count_lines == 0:
+            gui.show()
+            continue
 
+        gui.lines(
+            begin=LINES1_BEGIN.to_numpy()[:count_lines],
+            end=LINES1_END.to_numpy()[:count_lines],
+        )
+        gui.lines(
+            begin=LINES2_BEGIN.to_numpy()[:count_lines],
+            end=LINES2_END.to_numpy()[:count_lines],
+        )
 
-@ti.kernel
-def set_cat_init_positions(cats: ti.template()):
-    for idx in range(cfg.CATS_N):
-        cats[idx].init_cat(idx, cfg.CAT_RADIUS)
+        gui.show()
 
 
 def validate_config():
@@ -121,7 +157,17 @@ def main():
         cats=cats,
         from_idx=0,
     )
-    mainloop(cats, spawner)
+
+    gui = ti.GUI("catsim", res=(cfg.PLATE_WIDTH, cfg.PLATE_HEIGHT))
+
+    spawner.set_cat_init_positions(cfg.CATS_N, 0)
+
+    fav_cat_exists = False
+    if 0 <= cfg.FAVORITE_CAT_IDX < cfg.CATS_N:
+        spawner.set_always_visible_cat(cfg.FAVORITE_CAT_IDX, 0)
+        fav_cat_exists = True
+
+    mainloop(cats, fav_cat_exists, gui)
 
 
 if __name__ == "__main__":
