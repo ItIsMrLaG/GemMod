@@ -1,29 +1,25 @@
 import taichi as ti
 import taichi.math as tm
 
-from catsim.constants import (
-    # PROBABILISTIC INTERACTION #
-    DISABLE_PROB_INTER,
-    ENABLE_BORDER_INTER,
+from catsim.enums import (
     INTERACTION_LEVEL_0,
     INTERACTION_LEVEL_1,
     INTERACTION_NO,
-    # PATTERNS #
-    MOVE_PATTERN_LINE_ID,
-    MOVE_PATTERN_PHIS_ID,
-    MOVE_PATTERN_RANDOM_ID,
+    INVISIBLE,
+    MOVE_PATTERN_LINE,
+    MOVE_PATTERN_PHIS,
+    MOVE_PATTERN_RANDOM,
     NEVER_APPEARED,
     VISIBLE,
-    INVISIBLE,
 )
 from catsim.tools import (
     get_distance,
+    get_distance_py,
+    get_sides_distance,
+    is_boundary_point,
     move_pattern_line,
     move_pattern_phis,
     move_pattern_random,
-    is_boundary_point,
-    get_sides_distance,
-    get_distance_py,
 )
 
 _RADIUS_0: ti.f32
@@ -35,8 +31,8 @@ _MOVE_PATTERN: ti.i32
 _MAX_DISTANCE: ti.f32
 _DISTANCE_TYPE: ti.i32
 
-_PROB_INTER: ti.i32
-_BORDER_INTER: ti.i32
+_PROB_INTER: bool
+_BORDER_INTER: bool
 
 
 def init_cat_env(
@@ -46,9 +42,9 @@ def init_cat_env(
     width: ti.i32,
     height: ti.i32,
     move_pattern: ti.i32,
-    prob_inter: ti.i32,
+    prob_inter: bool,
     distance_type: ti.i32,
-    border_inter: ti.i32,
+    border_inter: bool,
 ):
     global \
         _RADIUS_0, \
@@ -156,7 +152,7 @@ class Cat:
         )
         self.move_pattern = _MOVE_PATTERN
 
-        if _BORDER_INTER == ENABLE_BORDER_INTER:
+        if _BORDER_INTER:
             self.init_border_inter(visibility_status)
 
     @ti.func
@@ -166,14 +162,14 @@ class Cat:
         prev_point = self.prev_point
         self.prev_point = self.point
 
-        if self.move_pattern == MOVE_PATTERN_RANDOM_ID:
+        if self.move_pattern == MOVE_PATTERN_RANDOM:
             self.set_point(
                 move_pattern_random(
                     self.point, _MOVE_RADIUS, _PLATE_WIDTH, _PLATE_HEIGHT
                 )
             )
 
-        elif self.move_pattern == MOVE_PATTERN_LINE_ID:
+        elif self.move_pattern == MOVE_PATTERN_LINE:
             self.set_point(
                 move_pattern_line(
                     self.point,
@@ -184,12 +180,12 @@ class Cat:
                 )
             )
 
-        elif self.move_pattern == MOVE_PATTERN_PHIS_ID:
+        elif self.move_pattern == MOVE_PATTERN_PHIS:
             self.set_point(
                 move_pattern_phis(self.point, prev_point, _PLATE_WIDTH, _PLATE_HEIGHT)
             )
 
-        if _BORDER_INTER == ENABLE_BORDER_INTER:
+        if _BORDER_INTER:
             self.update_visibility_status()
 
     @ti.func
@@ -201,14 +197,14 @@ class Cat:
             other_cat.visibility_status == INVISIBLE
             or other_cat.visibility_status == NEVER_APPEARED
         ):
-            visibility_flag = not (_BORDER_INTER == ENABLE_BORDER_INTER)
+            visibility_flag = not _BORDER_INTER
 
         if visibility_flag:
             if dist <= _RADIUS_0:
                 self.status = INTERACTION_LEVEL_0
 
             elif dist <= _RADIUS_1 and (
-                _PROB_INTER == DISABLE_PROB_INTER or ti.random() < 1.0 / (dist * dist)
+                (not _PROB_INTER) or ti.random() < 1.0 / (dist * dist)
             ):
                 self.status = ti.max(self.status, INTERACTION_LEVEL_1)
 

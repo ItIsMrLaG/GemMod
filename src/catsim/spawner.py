@@ -2,10 +2,11 @@ from typing import Any
 
 import taichi as ti
 import taichi.math as tm
-from catsim.constants import (
+
+from catsim.enums import (
+    ALWAYS_VISIBLE,
     NEVER_APPEARED,
     VISIBLE,
-    ALWAYS_VISIBLE,
 )
 from catsim.tools import init_cats
 

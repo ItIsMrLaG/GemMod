@@ -1,17 +1,14 @@
 import taichi as ti
 import taichi.math as tm
-from catsim.spawner import Spawner
 
 import catsim.config as cfg
 from catsim.cat import Cat, init_cat_env
-from catsim.constants import (
-    INTERACTION_LEVEL_0,
-    INTERACTION_LEVEL_1,
-    INTERACTION_NO,
-    VISIBLE,
+from catsim.enums import (
     ALWAYS_VISIBLE,
+    VISIBLE,
 )
 from catsim.grid import setup_grid, update_statuses
+from catsim.spawner import Spawner
 
 DCATS = Cat.field(shape=(cfg.CATS_N,))
 
@@ -20,54 +17,18 @@ COLORS = ti.field(ti.i32, shape=(cfg.CATS_N,))
 RADIUSES = ti.field(ti.f32, shape=(cfg.CATS_N,))
 
 
-@ti.func
-def status_to_color(status: ti.i32) -> ti.i32:
-    color = INTERACTION_NO
-
-    if status == INTERACTION_NO:
-        color = cfg.COLOR_LEVEL_NO
-
-    if status == INTERACTION_LEVEL_0:
-        color = cfg.COLOR_LEVEL_0
-
-    if status == INTERACTION_LEVEL_1:
-        color = cfg.COLOR_LEVEL_1
-
-    return color
-
-
-@ti.func
-def fav_status_to_color(status: ti.i32) -> ti.i32:
-    color = INTERACTION_NO
-
-    if status == INTERACTION_NO:
-        color = cfg.FAV_COLOR_LEVEL_NO
-
-    if status == INTERACTION_LEVEL_0:
-        color = cfg.FAV_COLOR_LEVEL_0
-
-    if status == INTERACTION_LEVEL_1:
-        color = cfg.FAV_COLOR_LEVEL_1
-
-    return color
-
-
 @ti.kernel
 def update_dcats(cats: ti.template(), favorite_cat_flag: ti.i32) -> ti.i32:
     counter: ti.i32 = 0
     for idx in range(cfg.CATS_N):
-        if (
-            cats[idx].visibility_status == VISIBLE
-            or cats[idx].visibility_status == ALWAYS_VISIBLE
-        ):
+        cat = cats[idx]
+        if cat.visibility_status == VISIBLE or cat.visibility_status == ALWAYS_VISIBLE:
             addr = ti.atomic_add(counter, 1)
-            POINTS[addr] = cats[idx].norm_point
-            RADIUSES[addr] = cats[idx].radius
+            POINTS[addr] = cat.norm_point
+            RADIUSES[addr] = cat.radius
 
-            if cats[idx].visibility_status == ALWAYS_VISIBLE:
-                COLORS[addr] = fav_status_to_color(cats[idx].status)
-            else:
-                COLORS[addr] = status_to_color(cats[idx].status)
+            fav = cat.visibility_status == ALWAYS_VISIBLE
+            COLORS[addr] = cfg.COLORS_FAV[cat.status] if fav else cfg.COLORS[cat.status]
 
     return counter
 
@@ -82,10 +43,10 @@ def mainloop(cats: ti.template(), spawner: Spawner):
     GUI = ti.GUI("catsim", res=(cfg.PLATE_WIDTH, cfg.PLATE_HEIGHT))
 
     favorite_cat_flag = 0 <= cfg.FAVORITE_CAT_IDX < cfg.CATS_N
-    spawner.set_cat_init_positions(cfg.CATS_N, cfg.SPAWN_SEED)
+    spawner.set_cat_init_positions(cfg.CATS_N, 0)
 
     if favorite_cat_flag:
-        spawner.set_always_visible_cat(cfg.FAVORITE_CAT_IDX, cfg.SPAWN_SEED)
+        spawner.set_always_visible_cat(cfg.FAVORITE_CAT_IDX, 0)
 
     while GUI.running:
         move_cats(cats)
@@ -140,7 +101,7 @@ def main():
         height=cfg.PLATE_HEIGHT,
         move_pattern=cfg.MOVE_PATTERN_ID,
         prob_inter=cfg.PROB_INTERACTION,
-        border_inter=cfg.BORDER_INTER,
+        border_inter=cfg.BORDER_INTERACTION,
         distance_type=cfg.DISTANCE,
     )
 

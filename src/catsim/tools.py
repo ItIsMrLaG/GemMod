@@ -1,11 +1,12 @@
 import taichi as ti
 import taichi.math as tm
 
-from catsim.constants import (
+from catsim.enums import (
     CHEBYSHEV_DISTANCE,
     MANHATTAN_DISTANCE,
-    EPS,
 )
+
+EPS = 1
 
 
 @ti.func

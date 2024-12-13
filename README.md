@@ -39,11 +39,11 @@
 
 3. Возможность выбирать паттерны поведения
     * Отражение от стенок с потерей скорости
-        * `MOVE_PATTERN_PHIS_ID`
+        * `MOVE_PATTERN_PHIS`
     * Изменения направления и скорости движения при столкновении со стенкой
-        * `MOVE_PATTERN_LINE_ID`
+        * `MOVE_PATTERN_LINE`
     * Случайное перемещение в рамках 'MOVE_RADIUS'
-        * `MOVE_PATTERN_RANDOM_ID`
+        * `MOVE_PATTERN_RANDOM`
 
    > Пример конфига находится в файле `./examples/cfg_beutiful.py`
 
