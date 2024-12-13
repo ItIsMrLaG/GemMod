@@ -85,23 +85,20 @@ def mainloop(cats: ti.template(), fav_cat_exists: bool, gui: ti.GUI):
         if count_cats == 0:
             continue
 
+        if count_lines != 0:
+            gui.lines(
+                begin=LINES1_BEGIN.to_numpy()[:count_lines],
+                end=LINES1_END.to_numpy()[:count_lines],
+            )
+            gui.lines(
+                begin=LINES2_BEGIN.to_numpy()[:count_lines],
+                end=LINES2_END.to_numpy()[:count_lines],
+            )
+
         gui.circles(
             pos=POINTS.to_numpy()[:count_cats],
             radius=RADIUSES.to_numpy()[:count_cats],
             color=COLORS.to_numpy()[:count_cats],
-        )
-
-        if count_lines == 0:
-            gui.show()
-            continue
-
-        gui.lines(
-            begin=LINES1_BEGIN.to_numpy()[:count_lines],
-            end=LINES1_END.to_numpy()[:count_lines],
-        )
-        gui.lines(
-            begin=LINES2_BEGIN.to_numpy()[:count_lines],
-            end=LINES2_END.to_numpy()[:count_lines],
         )
 
         gui.show()
@@ -120,7 +117,7 @@ def validate_config():
         or cfg.RADIUS_0 <= 0
         or cfg.RADIUS_1 <= 0
     ):
-        raise ValueError("Radii must be > 0")
+        raise ValueError("Radius must be > 0")
 
     if cfg.RADIUS_1 <= cfg.RADIUS_0:
         raise ValueError("Radius 1 must be > Radius 0")
