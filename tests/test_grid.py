@@ -50,7 +50,7 @@ class TestUpdateStatus:
             points=points,
         )
 
-        setup_grid(N, float(R1), float(WIDTH), float(HEIGHT))
+        setup_grid(N, float(R1), float(WIDTH), float(HEIGHT), 0)
         update_statuses(cats)
 
         expected_statuses = [
@@ -76,7 +76,7 @@ class TestUpdateStatus:
         ],
     )
     def test_primitive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
-        setup_grid(cat_n=N, r1=R1, width=WIDTH, height=HEIGHT)
+        setup_grid(cat_n=N, r1=R1, width=WIDTH, height=HEIGHT, favorite_cat_idx=0)
 
         init_cat_env(
             move_radius=R0,

@@ -193,7 +193,7 @@ class Cat:
             self.update_visibility_status()
 
     @ti.func
-    def fight_with(self, other_cat: ti.template()):
+    def fight_with(self, other_cat: ti.template()) -> ti.i32:
         dist = get_distance(self.point, other_cat.point, _DISTANCE_TYPE)
 
         visibility_flag = True
@@ -208,9 +208,11 @@ class Cat:
                 self.status = INTERACTION_LEVEL_0
 
             elif dist <= _RADIUS_1 and (
-                _PROB_INTER == DISABLE_PROB_INTER or ti.random() < 1.0 / (dist * dist)
+                    _PROB_INTER == DISABLE_PROB_INTER or ti.random() < 1.0 / (dist * dist)
             ):
                 self.status = ti.max(self.status, INTERACTION_LEVEL_1)
 
             else:
                 self.status = ti.max(self.status, INTERACTION_NO)
+
+        return self.status

@@ -1,8 +1,7 @@
 import math
 from typing import Any
-
+from catsim.constants import INTERACTION_LEVEL_0
 import taichi as ti
-
 __all__ = [
     "setup_grid",
     "update_statuses",
@@ -18,6 +17,11 @@ _CELL_N: ti.i32
 _CELL_SZ: ti.i32
 _GRID_COL_N: ti.i32
 _GRID_ROW_N: ti.i32
+
+_FAVORITE_CAT_IDX: ti.i32
+_NEW_LOGS: ti.field
+_OLD_LOGS: ti.field
+_OLD_STATUS = ti.field(ti.i8, shape=())
 
 """
 contains Cats ids:
@@ -46,12 +50,18 @@ _F_PREFIX_SUM: Any
 _F_CAT_PER_CELL: Any
 
 
-def setup_grid(cat_n: ti.i32, r1: ti.i32, width: ti.i32, height: ti.i32):
+def setup_grid(cat_n: ti.i32, r1: ti.i32, width: ti.i32, height: ti.i32, favorite_cat_idx: ti.i32):
     global _CATS_N, _RADIUS_1, _PLATE_WIDTH, _PLATE_HEIGHT
     _CATS_N = cat_n
     _RADIUS_1 = r1
     _PLATE_WIDTH = width
     _PLATE_HEIGHT = height
+
+    global _FAVORITE_CAT_IDX, _NEW_LOGS, _OLD_LOGS, _OLD_STATUS
+    _FAVORITE_CAT_IDX = favorite_cat_idx
+    _NEW_LOGS = ti.field(ti.i32, shape=(_CATS_N,))
+    _OLD_LOGS = ti.field(ti.i32, shape=(_CATS_N,))
+    _OLD_STATUS[None] = 1
 
     global _CELL_N, _GRID_COL_N, _GRID_ROW_N, _CELL_SZ
     _CELL_SZ = _RADIUS_1
@@ -135,4 +145,25 @@ def update_statuses(cats: ti.template()):
                     idx2 = _F_CELL_STORAGE[_idx2]
 
                     if idx1 != idx2:
-                        cats[idx1].fight_with(cats[idx2])
+                        status = cats[idx1].fight_with(cats[idx2])
+
+                        if idx1 == _FAVORITE_CAT_IDX:
+                            _NEW_LOGS[idx2] = status
+
+    counter = 0
+    for i in range(_CATS_N):
+        new_val = _NEW_LOGS[i]
+        old_val = _OLD_LOGS[i]
+        if new_val != old_val:
+            counter += 1
+            if new_val == INTERACTION_LEVEL_0:
+                print(f'YOUR CAT FOUGHT WITH CAT {i}')
+            else:
+                print(f'YOUR CAT HISSES AT CAT {i}')
+        _OLD_LOGS[i] = new_val
+    if counter == 0:
+        if _OLD_STATUS[None] == 1:
+            print('YOUR CAT IS WALKING PEACEFULLY')
+        _OLD_STATUS[None] = 0
+    else:
+        _OLD_STATUS[None] = 1

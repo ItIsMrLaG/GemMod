@@ -17,7 +17,7 @@ DCATS = Cat.field(shape=(cfg.CATS_N,))
 
 POINTS = tm.vec2.field(shape=(cfg.CATS_N,))
 COLORS = ti.field(ti.i32, shape=(cfg.CATS_N,))
-RADIUSES = ti.field(ti.f32, shape=(cfg.CATS_N,))
+RADII = ti.field(ti.f32, shape=(cfg.CATS_N,))
 
 
 @ti.func
@@ -53,7 +53,7 @@ def fav_status_to_color(status: ti.i32) -> ti.i32:
 
 
 @ti.kernel
-def update_dcats(cats: ti.template(), favorite_cat_flag: ti.i32) -> ti.i32:
+def update_dcats(cats: ti.template()) -> ti.i32:
     counter: ti.i32 = 0
     for idx in range(cfg.CATS_N):
         if (
@@ -62,7 +62,7 @@ def update_dcats(cats: ti.template(), favorite_cat_flag: ti.i32) -> ti.i32:
         ):
             addr = ti.atomic_add(counter, 1)
             POINTS[addr] = cats[idx].norm_point
-            RADIUSES[addr] = cats[idx].radius
+            RADII[addr] = cats[idx].radius
 
             if cats[idx].visibility_status == ALWAYS_VISIBLE:
                 COLORS[addr] = fav_status_to_color(cats[idx].status)
@@ -89,15 +89,16 @@ def mainloop(cats: ti.template(), spawner: Spawner):
 
     while GUI.running:
         move_cats(cats)
+
         update_statuses(cats)
 
-        counter = update_dcats(cats, favorite_cat_flag)
+        counter = update_dcats(cats)
         if counter == 0:
             continue
 
         GUI.circles(
             pos=POINTS.to_numpy()[0:counter],
-            radius=RADIUSES.to_numpy()[0:counter],
+            radius=RADII.to_numpy()[0:counter],
             color=COLORS.to_numpy()[0:counter],
         )
 
@@ -149,6 +150,7 @@ def main():
         r1=cfg.RADIUS_1,
         width=cfg.PLATE_WIDTH,
         height=cfg.PLATE_HEIGHT,
+        favorite_cat_idx=cfg.FAVORITE_CAT_IDX,
     )
 
     cats = Cat.field(shape=(cfg.CATS_N,))
