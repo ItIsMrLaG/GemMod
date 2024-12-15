@@ -8,28 +8,34 @@ from catsim.enums import (
     MOVE_PATTERN_PHIS,
 )
 
+
+# ----- GENERAL ----- #
 PLATE_WIDTH, PLATE_HEIGHT = 1500, 1000
 CATS_N = 150
 
-# 0 <= FAVORITE_CAT_IDX < CATS_N
-# otherwise favorite cat not set
-FAVORITE_CAT_IDX = 1
-
-OBSERVABLE_ANGLE_SPAN = ti.math.pi / 4
-
-# ----- CAT ----- #
 CAT_RADIUS = 0.02 * PLATE_HEIGHT
 MOVE_RADIUS = CAT_RADIUS * 2
 RADIUS_0 = CAT_RADIUS * 2
 RADIUS_1 = RADIUS_0 * 3
 
+
+# ----- FAVORITE CATS ----- #
+# 0 <= amount <= CATS_N
+FAV_CATS_AMOUNT = 2
+
+# Angle observable by favorite cats
+OBSERVABLE_ANGLE_SPAN = ti.math.pi / 4
+
+
 # ----- PATTERNS ----- #
 MOVE_PATTERN_ID = MOVE_PATTERN_PHIS
 DISTANCE = EUCLIDEAN_DISTANCE
 
+
 # ----- INTERACTIONS ----- #
 PROB_INTERACTION = False
 BORDER_INTERACTION = True
+
 
 # ----- VISUALISATION ----- #
 COLORS = ti.field(ti.i32, shape=(3,))
