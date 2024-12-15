@@ -1,0 +1,25 @@
+diff --git a/src/catsim/config.py b/src/catsim/config.py
+index 4a57d54..9a6a484 100644
+--- a/src/catsim/config.py
++++ b/src/catsim/config.py
+@@ -11,9 +11,9 @@ from catsim.enums import (
+
+ # ----- GENERAL ----- #
+ PLATE_WIDTH, PLATE_HEIGHT = 1500, 1000
+-CATS_N = 150
++CATS_N = 10
+
+-CAT_RADIUS = 0.02 * PLATE_HEIGHT
++CAT_RADIUS = 0.05 * PLATE_HEIGHT
+ MOVE_RADIUS = CAT_RADIUS * 2
+ RADIUS_0 = CAT_RADIUS * 2
+ RADIUS_1 = RADIUS_0 * 3
+@@ -21,7 +21,7 @@ RADIUS_1 = RADIUS_0 * 3
+
+ # ----- FAVORITE CATS ----- #
+ # 0 <= amount <= CATS_N
+-FAV_CATS_AMOUNT = 2
++FAV_CATS_AMOUNT = 0
+
+ # Angle observable by favorite cats
+ OBSERVABLE_ANGLE_SPAN = ti.math.pi / 4
