@@ -93,10 +93,12 @@ def mainloop(cats: ti.template(), gui: ti.GUI):
             gui.lines(
                 begin=LINES1_BEGIN.to_numpy()[:count_lines],
                 end=LINES1_END.to_numpy()[:count_lines],
+                radius=cfg.LINES_RADIUS,
             )
             gui.lines(
                 begin=LINES2_BEGIN.to_numpy()[:count_lines],
                 end=LINES2_END.to_numpy()[:count_lines],
+                radius=cfg.LINES_RADIUS,
             )
 
         if count_cats != 0:

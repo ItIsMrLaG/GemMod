@@ -8,7 +8,6 @@ from catsim.enums import (
     MOVE_PATTERN_PHIS,
 )
 
-
 # ----- GENERAL ----- #
 PLATE_WIDTH, PLATE_HEIGHT = 1500, 1000
 CATS_N = 150
@@ -38,6 +37,8 @@ BORDER_INTERACTION = True
 
 
 # ----- VISUALISATION ----- #
+LINES_RADIUS: ti.i32 = CAT_RADIUS // 10
+
 COLORS = ti.field(ti.i32, shape=(3,))
 COLORS[INTERACTION_NO] = 0x34C924  # green
 COLORS[INTERACTION_LEVEL_1] = 0xFFFF00  # yellow
