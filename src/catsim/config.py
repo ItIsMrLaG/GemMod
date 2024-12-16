@@ -21,8 +21,7 @@ RADIUS_1 = RADIUS_0 * 3
 # ----- FAVORITE CATS ----- #
 # 0 <= amount <= CATS_N
 FAV_CATS_AMOUNT = 2
-
-# Angle observable by favorite cats
+FAV_CATS_OBSERVING = True
 OBSERVABLE_ANGLE_SPAN = ti.math.pi / 4
 
 

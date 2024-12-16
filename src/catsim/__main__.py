@@ -43,7 +43,7 @@ def arrange_visuals(cats: ti.template()) -> tuple[ti.i32, ti.i32]:
             RADIUSES[render_idx] = cat.radius
             COLORS[render_idx] = (
                 cfg.COLORS[cat.status]
-                if cat.observed or (cfg.FAV_CATS_AMOUNT == 0)
+                if cat.observed or (not cfg.FAV_CATS_OBSERVING)
                 else cfg.COLORS_IGN[cat.status]
             )
 
@@ -54,30 +54,31 @@ def arrange_visuals(cats: ti.template()) -> tuple[ti.i32, ti.i32]:
         cat = cats[cat_idx]
         assert cat.visibility_status == ALWAYS_VISIBLE
 
-        LINES1_BEGIN[line_idx] = cat.norm_point
-        LINES2_BEGIN[line_idx] = cat.norm_point
-
-        LINES1_END[line_idx][0] = cat.norm_point[0] + LINE_LENGTH[0] * tm.cos(
-            cat.observable_angle[0] + ANGLE_SHIFT[0]
-        )
-        LINES1_END[line_idx][1] = cat.norm_point[1] + LINE_LENGTH[1] * tm.sin(
-            cat.observable_angle[0] + ANGLE_SHIFT[1]
-        )
-
-        LINES2_END[line_idx][0] = cat.norm_point[0] + LINE_LENGTH[0] * tm.cos(
-            cat.observable_angle[1] - ANGLE_SHIFT[0]
-        )
-        LINES2_END[line_idx][1] = cat.norm_point[1] + LINE_LENGTH[1] * tm.sin(
-            cat.observable_angle[1] - ANGLE_SHIFT[1]
-        )
-
-        ti.atomic_add(line_idx, 1)
-
         POINTS[render_idx] = cat.norm_point
         RADIUSES[render_idx] = cat.radius
         COLORS[render_idx] = cfg.COLORS_FAV[cat.status]
 
         ti.atomic_add(render_idx, 1)
+
+        if cfg.FAV_CATS_OBSERVING:
+            LINES1_BEGIN[line_idx] = cat.norm_point
+            LINES2_BEGIN[line_idx] = cat.norm_point
+
+            LINES1_END[line_idx][0] = cat.norm_point[0] + LINE_LENGTH[0] * tm.cos(
+                cat.observable_angle[0] + ANGLE_SHIFT[0]
+            )
+            LINES1_END[line_idx][1] = cat.norm_point[1] + LINE_LENGTH[1] * tm.sin(
+                cat.observable_angle[0] + ANGLE_SHIFT[1]
+            )
+
+            LINES2_END[line_idx][0] = cat.norm_point[0] + LINE_LENGTH[0] * tm.cos(
+                cat.observable_angle[1] - ANGLE_SHIFT[0]
+            )
+            LINES2_END[line_idx][1] = cat.norm_point[1] + LINE_LENGTH[1] * tm.sin(
+                cat.observable_angle[1] - ANGLE_SHIFT[1]
+            )
+
+            ti.atomic_add(line_idx, 1)
 
     return render_idx, line_idx
 

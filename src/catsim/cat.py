@@ -1,7 +1,7 @@
 import taichi as ti
 import taichi.math as tm
 
-from catsim.config import OBSERVABLE_ANGLE_SPAN
+from catsim.config import FAV_CATS_OBSERVING, OBSERVABLE_ANGLE_SPAN
 from catsim.enums import (
     ALWAYS_VISIBLE,
     INTERACTION_LEVEL_0,
@@ -223,7 +223,7 @@ class Cat:
 
             else:
                 observing = True
-                if self.visibility_status == ALWAYS_VISIBLE:
+                if self.visibility_status == ALWAYS_VISIBLE and FAV_CATS_OBSERVING:
                     relative_angle = tm.atan2(
                         other_cat.point[1] - self.point[1],
                         other_cat.point[0] - self.point[0],
