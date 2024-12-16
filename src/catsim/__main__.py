@@ -21,6 +21,12 @@ LINES2_BEGIN = tm.vec2.field(shape=(cfg.CATS_N,))
 LINES2_END = tm.vec2.field(shape=(cfg.CATS_N,))
 
 LINE_LENGTH = tm.vec2([cfg.RADIUS_1 / cfg.PLATE_WIDTH, cfg.RADIUS_1 / cfg.PLATE_HEIGHT])
+ANGLE_SHIFT = tm.vec2(
+    [
+        tm.asin(cfg.CAT_RADIUS / cfg.PLATE_WIDTH / LINE_LENGTH[0] * 1.5),
+        tm.asin(cfg.CAT_RADIUS / cfg.PLATE_HEIGHT / LINE_LENGTH[1] * 1.5),
+    ]
+)
 
 
 @ti.kernel
@@ -52,17 +58,17 @@ def arrange_visuals(cats: ti.template()) -> tuple[ti.i32, ti.i32]:
         LINES2_BEGIN[line_idx] = cat.norm_point
 
         LINES1_END[line_idx][0] = cat.norm_point[0] + LINE_LENGTH[0] * tm.cos(
-            cat.observable_angle[0]
+            cat.observable_angle[0] + ANGLE_SHIFT[0]
         )
         LINES1_END[line_idx][1] = cat.norm_point[1] + LINE_LENGTH[1] * tm.sin(
-            cat.observable_angle[0]
+            cat.observable_angle[0] + ANGLE_SHIFT[1]
         )
 
         LINES2_END[line_idx][0] = cat.norm_point[0] + LINE_LENGTH[0] * tm.cos(
-            cat.observable_angle[1]
+            cat.observable_angle[1] - ANGLE_SHIFT[0]
         )
         LINES2_END[line_idx][1] = cat.norm_point[1] + LINE_LENGTH[1] * tm.sin(
-            cat.observable_angle[1]
+            cat.observable_angle[1] - ANGLE_SHIFT[1]
         )
 
         ti.atomic_add(line_idx, 1)
