@@ -232,7 +232,7 @@ class Cat:
                         self.observable_angle[0]
                         < relative_angle
                         < self.observable_angle[1]
-                    ):
+                    ) or dist <= _RADIUS_0:
                         other_cat.observed = True
                     else:
                         observing = False
