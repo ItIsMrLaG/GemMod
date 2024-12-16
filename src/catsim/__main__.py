@@ -1,10 +1,19 @@
+import argparse
+from pathlib import Path
+
 import taichi as ti
 import taichi.math as tm
 from catsim.spawner import Spawner
 
-import catsim.config as cfg
+from catsim.config import Config
 from catsim.cat import Cat, init_cat_env
 from catsim.constants import (
+    COLOR_LEVEL_NO,
+    COLOR_LEVEL_0,
+    COLOR_LEVEL_1,
+    FAV_COLOR_LEVEL_NO,
+    FAV_COLOR_LEVEL_0,
+    FAV_COLOR_LEVEL_1,
     INTERACTION_LEVEL_0,
     INTERACTION_LEVEL_1,
     INTERACTION_NO,
@@ -13,25 +22,19 @@ from catsim.constants import (
 )
 from catsim.grid import setup_grid, update_statuses
 
-DCATS = Cat.field(shape=(cfg.CATS_N,))
-
-POINTS = tm.vec2.field(shape=(cfg.CATS_N,))
-COLORS = ti.field(ti.i32, shape=(cfg.CATS_N,))
-RADII = ti.field(ti.f32, shape=(cfg.CATS_N,))
-
 
 @ti.func
 def status_to_color(status: ti.i32) -> ti.i32:
     color = INTERACTION_NO
 
     if status == INTERACTION_NO:
-        color = cfg.COLOR_LEVEL_NO
+        color = COLOR_LEVEL_NO
 
     if status == INTERACTION_LEVEL_0:
-        color = cfg.COLOR_LEVEL_0
+        color = COLOR_LEVEL_0
 
     if status == INTERACTION_LEVEL_1:
-        color = cfg.COLOR_LEVEL_1
+        color = COLOR_LEVEL_1
 
     return color
 
@@ -41,44 +44,44 @@ def fav_status_to_color(status: ti.i32) -> ti.i32:
     color = INTERACTION_NO
 
     if status == INTERACTION_NO:
-        color = cfg.FAV_COLOR_LEVEL_NO
+        color = FAV_COLOR_LEVEL_NO
 
     if status == INTERACTION_LEVEL_0:
-        color = cfg.FAV_COLOR_LEVEL_0
+        color = FAV_COLOR_LEVEL_0
 
     if status == INTERACTION_LEVEL_1:
-        color = cfg.FAV_COLOR_LEVEL_1
+        color = FAV_COLOR_LEVEL_1
 
     return color
 
 
 @ti.kernel
-def update_dcats(cats: ti.template()) -> ti.i32:
+def update_dcats(cats_n: ti.i32, cats: ti.template(), points: ti.template(), radii: ti.template(), colors: ti.template()) -> ti.i32:
     counter: ti.i32 = 0
-    for idx in range(cfg.CATS_N):
+    for idx in range(cats_n):
         if (
             cats[idx].visibility_status == VISIBLE
             or cats[idx].visibility_status == ALWAYS_VISIBLE
         ):
             addr = ti.atomic_add(counter, 1)
-            POINTS[addr] = cats[idx].norm_point
-            RADII[addr] = cats[idx].radius
+            points[addr] = cats[idx].norm_point
+            radii[addr] = cats[idx].radius
 
             if cats[idx].visibility_status == ALWAYS_VISIBLE:
-                COLORS[addr] = fav_status_to_color(cats[idx].status)
+                colors[addr] = fav_status_to_color(cats[idx].status)
             else:
-                COLORS[addr] = status_to_color(cats[idx].status)
+                colors[addr] = status_to_color(cats[idx].status)
 
     return counter
 
 
 @ti.kernel
-def move_cats(cats: ti.template()):
-    for idx in range(cfg.CATS_N):
+def move_cats(CATS_N: ti.i32, cats: ti.template()):
+    for idx in range(CATS_N):
         cats[idx].move()
 
 
-def mainloop(cats: ti.template(), spawner: Spawner):
+def mainloop(cfg: Config, cats: ti.template(), spawner: Spawner, points: ti.template(), radii: ti. template(), colors: ti.template()):
     GUI = ti.GUI("catsim", res=(cfg.PLATE_WIDTH, cfg.PLATE_HEIGHT))
 
     favorite_cat_flag = 0 <= cfg.FAVORITE_CAT_IDX < cfg.CATS_N
@@ -88,30 +91,24 @@ def mainloop(cats: ti.template(), spawner: Spawner):
         spawner.set_always_visible_cat(cfg.FAVORITE_CAT_IDX, cfg.SPAWN_SEED)
 
     while GUI.running:
-        move_cats(cats)
+        move_cats(cfg.CATS_N, cats)
 
         update_statuses(cats)
 
-        counter = update_dcats(cats)
+        counter = update_dcats(cfg.CATS_N, cats, points, radii, colors)
         if counter == 0:
             continue
 
         GUI.circles(
-            pos=POINTS.to_numpy()[0:counter],
-            radius=RADII.to_numpy()[0:counter],
-            color=COLORS.to_numpy()[0:counter],
+            pos=points.to_numpy()[0:counter],
+            radius=radii.to_numpy()[0:counter],
+            color=colors.to_numpy()[0:counter],
         )
 
         GUI.show()
 
 
-@ti.kernel
-def set_cat_init_positions(cats: ti.template()):
-    for idx in range(cfg.CATS_N):
-        cats[idx].init_cat(idx, cfg.CAT_RADIUS)
-
-
-def validate_config():
+def validate_config(cfg):
     if cfg.PLATE_HEIGHT <= 0 or cfg.PLATE_WIDTH <= 0:
         raise ValueError("Plate height/width must be > 0")
 
@@ -130,8 +127,23 @@ def validate_config():
         raise ValueError("Radius 1 must be > Radius 0")
 
 
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "config_file",
+        type=str
+    )
+    return parser.parse_args()
+
+
 def main():
-    validate_config()
+    args = parse_arguments()
+    cfg = Config.generate_from_json(Path(args.config_file))
+    validate_config(cfg)
+
+    points = tm.vec2.field(shape=(cfg.CATS_N,))
+    colors = ti.field(ti.i32, shape=(cfg.CATS_N,))
+    radii = ti.field(ti.f32, shape=(cfg.CATS_N,))
 
     init_cat_env(
         move_radius=cfg.MOVE_RADIUS,
@@ -162,7 +174,7 @@ def main():
         cats=cats,
         from_idx=0,
     )
-    mainloop(cats, spawner)
+    mainloop(cfg, cats, spawner, points, radii, colors)
 
 
 if __name__ == "__main__":

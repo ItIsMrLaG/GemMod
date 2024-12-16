@@ -203,16 +203,19 @@ class Cat:
         ):
             visibility_flag = not (_BORDER_INTER == ENABLE_BORDER_INTER)
 
+        _st = INTERACTION_NO
         if visibility_flag:
             if dist <= _RADIUS_0:
                 self.status = INTERACTION_LEVEL_0
+                _st = INTERACTION_LEVEL_0
 
             elif dist <= _RADIUS_1 and (
                     _PROB_INTER == DISABLE_PROB_INTER or ti.random() < 1.0 / (dist * dist)
             ):
                 self.status = ti.max(self.status, INTERACTION_LEVEL_1)
+                _st = INTERACTION_LEVEL_1
 
             else:
                 self.status = ti.max(self.status, INTERACTION_NO)
 
-        return self.status
+        return _st

@@ -86,6 +86,7 @@ def init_cell_storage(cats: ti.template()):
 
     for idx in range(_CATS_N):
         cell_idx = ti.floor(cats[idx].point / _CELL_SZ, ti.i32)
+
         ti.atomic_add(_F_CAT_PER_CELL[cell_idx], 1)
 
     for col in range(_GRID_COL_N):
@@ -127,6 +128,9 @@ def update_statuses(cats: ti.template()):
     init_cell_storage(cats)
 
     ti.loop_config(serialize=True)
+
+    _NEW_LOGS.fill(0)
+
     for idx1 in range(_CATS_N):
         cell_idx = ti.floor(cats[idx1].point / _CELL_SZ, ti.i32)
 
@@ -150,18 +154,21 @@ def update_statuses(cats: ti.template()):
                         if idx1 == _FAVORITE_CAT_IDX:
                             _NEW_LOGS[idx2] = status
 
-    counter = 0
+    has_interaction = False
     for i in range(_CATS_N):
         new_val = _NEW_LOGS[i]
         old_val = _OLD_LOGS[i]
-        if new_val != old_val:
-            counter += 1
-            if new_val == INTERACTION_LEVEL_0:
-                print(f'YOUR CAT FOUGHT WITH CAT {i}')
-            else:
-                print(f'YOUR CAT HISSES AT CAT {i}')
+        if new_val != 0:
+            has_interaction = True
+            if new_val != old_val:
+                if new_val == INTERACTION_LEVEL_0:
+                    print(f'YOUR CAT FOUGHT WITH CAT {i}')
+                else:
+                    print(f'YOUR CAT HISSES AT CAT {i}')
+
         _OLD_LOGS[i] = new_val
-    if counter == 0:
+
+    if not has_interaction:
         if _OLD_STATUS[None] == 1:
             print('YOUR CAT IS WALKING PEACEFULLY')
         _OLD_STATUS[None] = 0
