@@ -22,6 +22,8 @@ RADIUS_1 = RADIUS_0 * 3
 # 0 <= amount <= CATS_N
 FAV_CATS_AMOUNT = 2
 FAV_CATS_OBSERVING = True
+
+# pi / 8 <= angle <= pi / 2
 OBSERVABLE_ANGLE_SPAN = ti.math.pi / 4
 
 

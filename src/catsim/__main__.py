@@ -128,6 +128,9 @@ def validate_config():
     if not (0 <= cfg.FAV_CATS_AMOUNT <= cfg.CATS_N):
         raise ValueError("Invalid amount of favorite cats")
 
+    if not (tm.pi / 8 <= cfg.OBSERVABLE_ANGLE_SPAN <= tm.pi / 2):
+        raise ValueError("Invalid observable angle span")
+
     if (
         cfg.CAT_RADIUS <= 0
         or cfg.MOVE_RADIUS <= 0
