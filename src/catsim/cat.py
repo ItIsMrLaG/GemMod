@@ -1,7 +1,6 @@
 import taichi as ti
 import taichi.math as tm
 
-from catsim.config import FAV_CATS_OBSERVING, OBSERVABLE_ANGLE_SPAN
 from catsim.enums import (
     ALWAYS_VISIBLE,
     INTERACTION_LEVEL_0,
@@ -35,6 +34,9 @@ _DISTANCE_TYPE: ti.i32
 _PROB_INTER: bool
 _BORDER_INTER: bool
 
+_FAV_CATS_OBSERVING: bool
+_OBSERVABLE_ANGLE_SPAN: float
+
 
 def init_cat_env(
     move_radius: ti.f32,
@@ -46,6 +48,8 @@ def init_cat_env(
     prob_inter: bool,
     distance_type: ti.i32,
     border_inter: bool,
+    fav_cats_observing: bool,
+    observable_angle_span: float,
 ):
     global \
         _RADIUS_0, \
@@ -57,7 +61,9 @@ def init_cat_env(
         _PROB_INTER, \
         _BORDER_INTER, \
         _DISTANCE_TYPE, \
-        _MAX_DISTANCE
+        _MAX_DISTANCE, \
+        _FAV_CATS_OBSERVING, \
+        _OBSERVABLE_ANGLE_SPAN
 
     _MOVE_RADIUS = move_radius
     _RADIUS_0 = r0
@@ -68,6 +74,8 @@ def init_cat_env(
     _PROB_INTER = prob_inter
     _BORDER_INTER = border_inter
     _DISTANCE_TYPE = distance_type
+    _FAV_CATS_OBSERVING = fav_cats_observing
+    _OBSERVABLE_ANGLE_SPAN = observable_angle_span
 
     p0 = tm.vec2([0, 0])
     p1 = tm.vec2([0, _PLATE_WIDTH])
@@ -204,14 +212,16 @@ class Cat:
             direction_angle = tm.atan2(
                 self.point[1] - self.prev_point[1], self.point[0] - self.prev_point[0]
             )
-            self.observable_angle[0] = direction_angle - OBSERVABLE_ANGLE_SPAN
-            self.observable_angle[1] = direction_angle + OBSERVABLE_ANGLE_SPAN
+            self.observable_angle[0] = direction_angle - _OBSERVABLE_ANGLE_SPAN
+            self.observable_angle[1] = direction_angle + _OBSERVABLE_ANGLE_SPAN
 
         if _BORDER_INTER:
             self.update_visibility_status()
 
     @ti.func
-    def fight_with(self, other_cat: ti.template()):
+    def fight_with(self, other_cat: ti.template()) -> ti.i32:
+        _st = INTERACTION_NO
+
         if (
             other_cat.visibility_status == VISIBLE
             or other_cat.visibility_status == ALWAYS_VISIBLE
@@ -219,11 +229,13 @@ class Cat:
             dist = get_distance(self.point, other_cat.point, _DISTANCE_TYPE)
 
             if dist > _RADIUS_1 or (_PROB_INTER and ti.random() >= 1.0 / (dist * dist)):
-                self.status = ti.max(self.status, INTERACTION_NO)
+                # self.status = ti.max(self.status, INTERACTION_NO)
+                # _st = INTERACTION_NO
+                pass
 
             else:
                 observing = True
-                if self.visibility_status == ALWAYS_VISIBLE and FAV_CATS_OBSERVING:
+                if self.visibility_status == ALWAYS_VISIBLE and _FAV_CATS_OBSERVING:
                     relative_angle = tm.atan2(
                         other_cat.point[1] - self.point[1],
                         other_cat.point[0] - self.point[0],
@@ -238,8 +250,10 @@ class Cat:
                         observing = False
 
                 if observing:
-                    self.status = (
-                        INTERACTION_LEVEL_0
-                        if dist <= _RADIUS_0
-                        else ti.max(self.status, INTERACTION_LEVEL_1)
-                    )
+                    if dist <= _RADIUS_0:
+                        self.status = INTERACTION_LEVEL_0
+                        _st = INTERACTION_LEVEL_0
+                    else:
+                        self.status = ti.max(self.status, INTERACTION_LEVEL_1)
+                        _st = INTERACTION_LEVEL_1
+        return _st
