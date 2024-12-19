@@ -1,66 +1,66 @@
+import argparse
+from pathlib import Path
+
 import taichi as ti
 import taichi.math as tm
 
-import catsim.config as cfg
+from catsim.config import Config
 from catsim.cat import Cat, init_cat_env
-from catsim.enums import (
-    ALWAYS_VISIBLE,
-    VISIBLE,
-)
+from catsim.enums import ALWAYS_VISIBLE, VISIBLE, COLORS, COLORS_IGN, COLORS_FAV
 from catsim.grid import setup_grid, update_statuses
 from catsim.spawner import Spawner
 
-POINTS = tm.vec2.field(shape=(cfg.CATS_N,))
-COLORS = ti.field(ti.i32, shape=(cfg.CATS_N,))
-RADIUSES = ti.field(ti.f32, shape=(cfg.CATS_N,))
+POINTS: tm.vec2.field
+CAT_COLORS: ti.field
+RADII: ti.field
 
-LINES1_BEGIN = tm.vec2.field(shape=(cfg.CATS_N,))
-LINES1_END = tm.vec2.field(shape=(cfg.CATS_N,))
+LINES1_BEGIN: tm.vec2.field
+LINES1_END: tm.vec2.field
 
-LINES2_BEGIN = tm.vec2.field(shape=(cfg.CATS_N,))
-LINES2_END = tm.vec2.field(shape=(cfg.CATS_N,))
+LINES2_BEGIN: tm.vec2.field
+LINES2_END: tm.vec2.field
 
-LINE_LENGTH = tm.vec2([cfg.RADIUS_1 / cfg.PLATE_WIDTH, cfg.RADIUS_1 / cfg.PLATE_HEIGHT])
-ANGLE_SHIFT = tm.vec2(
-    [
-        tm.asin(cfg.CAT_RADIUS / cfg.PLATE_WIDTH / LINE_LENGTH[0] * 1.5),
-        tm.asin(cfg.CAT_RADIUS / cfg.PLATE_HEIGHT / LINE_LENGTH[1] * 1.5),
-    ]
-)
+LINE_LENGTH: tm.vec2
+ANGLE_SHIFT: tm.vec2
 
 
 @ti.kernel
-def arrange_visuals(cats: ti.template()) -> tuple[ti.i32, ti.i32]:
+def arrange_visuals(
+    cats: ti.template(),
+    fav_cats_amount: ti.i8,
+    fav_cats_observing: bool,
+    cats_n: ti.i32,
+) -> tuple[ti.i32, ti.i32]:
     render_idx: ti.i32 = 0
 
-    for cat_idx in range(cfg.FAV_CATS_AMOUNT, cfg.CATS_N):
+    for cat_idx in range(fav_cats_amount, cats_n):
         # skip favorite cats for now to render them later
         # so they appear "above" others
 
         cat = cats[cat_idx]
         if cat.visibility_status == VISIBLE:
             POINTS[render_idx] = cat.norm_point
-            RADIUSES[render_idx] = cat.radius
-            COLORS[render_idx] = (
-                cfg.COLORS[cat.status]
-                if cat.observed or (not cfg.FAV_CATS_OBSERVING)
-                else cfg.COLORS_IGN[cat.status]
+            RADII[render_idx] = cat.radius
+            CAT_COLORS[render_idx] = (
+                COLORS[cat.status]
+                if cat.observed or (not fav_cats_observing)
+                else COLORS_IGN[cat.status]
             )
 
             ti.atomic_add(render_idx, 1)
 
     line_idx: ti.i32 = 0
-    for cat_idx in range(cfg.FAV_CATS_AMOUNT):
+    for cat_idx in range(fav_cats_amount):
         cat = cats[cat_idx]
         assert cat.visibility_status == ALWAYS_VISIBLE
 
         POINTS[render_idx] = cat.norm_point
-        RADIUSES[render_idx] = cat.radius
-        COLORS[render_idx] = cfg.COLORS_FAV[cat.status]
+        RADII[render_idx] = cat.radius
+        CAT_COLORS[render_idx] = COLORS_FAV[cat.status]
 
         ti.atomic_add(render_idx, 1)
 
-        if cfg.FAV_CATS_OBSERVING:
+        if fav_cats_observing:
             LINES1_BEGIN[line_idx] = cat.norm_point
             LINES2_BEGIN[line_idx] = cat.norm_point
 
@@ -84,17 +84,19 @@ def arrange_visuals(cats: ti.template()) -> tuple[ti.i32, ti.i32]:
 
 
 @ti.kernel
-def move_cats(cats: ti.template()):
-    for idx in range(cfg.CATS_N):
+def move_cats(cats: ti.template(), cats_n: ti.i32):
+    for idx in range(cats_n):
         cats[idx].move()
 
 
-def mainloop(cats: ti.template(), gui: ti.GUI):
+def mainloop(cfg: Config, cats: ti.template(), gui: ti.GUI):
     while gui.running:
-        move_cats(cats)
+        move_cats(cats, cfg.CATS_N)
         update_statuses(cats)
 
-        count_cats, count_lines = arrange_visuals(cats)
+        count_cats, count_lines = arrange_visuals(
+            cats, cfg.FAV_CATS_AMOUNT, cfg.FAV_CATS_OBSERVING, cfg.CATS_N
+        )
 
         if count_lines != 0:
             gui.lines(
@@ -111,14 +113,14 @@ def mainloop(cats: ti.template(), gui: ti.GUI):
         if count_cats != 0:
             gui.circles(
                 pos=POINTS.to_numpy()[:count_cats],
-                radius=RADIUSES.to_numpy()[:count_cats],
-                color=COLORS.to_numpy()[:count_cats],
+                radius=RADII.to_numpy()[:count_cats],
+                color=CAT_COLORS.to_numpy()[:count_cats],
             )
 
         gui.show()
 
 
-def validate_config():
+def validate_config(cfg):
     if cfg.PLATE_HEIGHT <= 0 or cfg.PLATE_WIDTH <= 0:
         raise ValueError("Plate height/width must be > 0")
 
@@ -143,8 +145,43 @@ def validate_config():
         raise ValueError("Radius 1 must be > Radius 0")
 
 
+def init_env(cfg: Config):
+    global POINTS, CAT_COLORS, RADII
+    POINTS = tm.vec2.field(shape=(cfg.CATS_N,))
+    CAT_COLORS = ti.field(ti.i32, shape=(cfg.CATS_N,))
+    RADII = ti.field(ti.f32, shape=(cfg.CATS_N,))
+
+    global LINES1_BEGIN, LINES1_END, LINES2_BEGIN, LINES2_END
+    LINES1_BEGIN = tm.vec2.field(shape=(cfg.CATS_N,))
+    LINES1_END = tm.vec2.field(shape=(cfg.CATS_N,))
+
+    LINES2_BEGIN = tm.vec2.field(shape=(cfg.CATS_N,))
+    LINES2_END = tm.vec2.field(shape=(cfg.CATS_N,))
+
+    global LINE_LENGTH, ANGLE_SHIFT
+    LINE_LENGTH = tm.vec2(
+        [cfg.RADIUS_1 / cfg.PLATE_WIDTH, cfg.RADIUS_1 / cfg.PLATE_HEIGHT]
+    )
+    ANGLE_SHIFT = tm.vec2(
+        [
+            tm.asin(cfg.CAT_RADIUS / cfg.PLATE_WIDTH / LINE_LENGTH[0] * 1.5),
+            tm.asin(cfg.CAT_RADIUS / cfg.PLATE_HEIGHT / LINE_LENGTH[1] * 1.5),
+        ]
+    )
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config_file", type=str)
+    return parser.parse_args()
+
+
 def main():
-    validate_config()
+    args = parse_arguments()
+    cfg = Config.generate_from_json(Path(args.config_file))
+    validate_config(cfg)
+
+    init_env(cfg)
 
     init_cat_env(
         move_radius=cfg.MOVE_RADIUS,
@@ -156,6 +193,8 @@ def main():
         prob_inter=cfg.PROB_INTERACTION,
         border_inter=cfg.BORDER_INTERACTION,
         distance_type=cfg.DISTANCE,
+        fav_cats_observing=cfg.FAV_CATS_OBSERVING,
+        observable_angle_span=cfg.OBSERVABLE_ANGLE_SPAN,
     )
 
     setup_grid(
@@ -163,6 +202,7 @@ def main():
         r1=cfg.RADIUS_1,
         width=cfg.PLATE_WIDTH,
         height=cfg.PLATE_HEIGHT,
+        fav_cats_amount=cfg.FAV_CATS_AMOUNT,
     )
 
     cats = Cat.field(shape=(cfg.CATS_N,))
@@ -181,7 +221,7 @@ def main():
     for idx in range(cfg.FAV_CATS_AMOUNT):
         spawner.set_always_visible_cat(idx, 0)
 
-    mainloop(cats, gui)
+    mainloop(cfg, cats, gui)
 
 
 if __name__ == "__main__":
