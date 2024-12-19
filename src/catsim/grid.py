@@ -1,6 +1,6 @@
 import math
 from typing import Any
-from catsim.enums import INTERACTION_NO, INTERACTION_LEVEL_0, INTERACTION_LEVEL_1
+from catsim.enums import INTERACTION_NO, INTERACTION_LEVEL_0
 
 import taichi as ti
 
