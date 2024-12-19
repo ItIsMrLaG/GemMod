@@ -33,6 +33,8 @@ class TestUpdateStatus:
             prob_inter=False,
             border_inter=False,
             distance_type=EUCLIDEAN_DISTANCE,
+            fav_cats_observing=False,
+            observable_angle_span=ti.math.pi / 4,
         )
 
         points = ti.Vector.field(n=2, dtype=float, shape=(N,))
@@ -50,7 +52,7 @@ class TestUpdateStatus:
             points=points,
         )
 
-        setup_grid(N, float(R1), float(WIDTH), float(HEIGHT))
+        setup_grid(N, float(R1), float(WIDTH), float(HEIGHT), 1)
         update_statuses(cats)
 
         expected_statuses = [
@@ -71,12 +73,13 @@ class TestUpdateStatus:
             (100, 2, 8, 1, 500, 500, EUCLIDEAN_DISTANCE),
             (1000, 2, 8, 1, 500, 500, EUCLIDEAN_DISTANCE),
             (10000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
+            (10, 2, 8, 1, 100, 100, EUCLIDEAN_DISTANCE),
             (10000, 2, 8, 1, 1500, 2000, EUCLIDEAN_DISTANCE),
             (50000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
         ],
     )
     def test_primitive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
-        setup_grid(cat_n=N, r1=R1, width=WIDTH, height=HEIGHT)
+        setup_grid(cat_n=N, r1=R1, width=WIDTH, height=HEIGHT, fav_cats_amount=1)
 
         init_cat_env(
             move_radius=R0,
@@ -88,6 +91,8 @@ class TestUpdateStatus:
             prob_inter=False,
             border_inter=False,
             distance_type=distance_type,
+            fav_cats_observing=False,
+            observable_angle_span=ti.math.pi / 4,
         )
 
         cats = Cat.field(shape=(N,))
@@ -100,7 +105,7 @@ class TestUpdateStatus:
         )
         spawner.set_cat_init_positions(N, 0)
 
-        expected_statuses = ti.ndarray(dtype=ti.i32, shape=(N,))
+        expected_statuses = ti.ndarray(dtype=ti.i8, shape=(N,))
         primitive_update_states(N, cats, expected_statuses, distance_type, R0, R1)
 
         update_statuses(cats)
