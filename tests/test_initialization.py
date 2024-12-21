@@ -56,7 +56,7 @@ def test_cat_initialization_with_env():
         prob_inter=DISABLE_PROB_INTER,
     )
     catInstance = init_cat(3.0)
-    for point in catInstance.point:
-        assert 0 <= point <= cat._PLATE_WIDTH
+    assert 0 <= catInstance.point[0] <= cat._PLATE_WIDTH
+    assert 0 <= catInstance.point[0] <= cat._PLATE_HEIGHT
     assert catInstance.radius == 3.0
     assert catInstance.move_pattern == MOVE_PATTERN_LINE_ID
