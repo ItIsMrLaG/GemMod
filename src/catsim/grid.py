@@ -21,6 +21,7 @@ _GRID_COL_N: ti.i32
 _GRID_ROW_N: ti.i32
 
 _FAV_CATS_AMOUNT: ti.i32
+_FAV_CATS_LOGGING: bool
 _NEW_LOGS: ti.field
 _OLD_LOGS: ti.field
 _OLD_STATUS: ti.field
@@ -53,7 +54,12 @@ _F_CAT_PER_CELL: Any
 
 
 def setup_grid(
-    cat_n: ti.i32, r1: ti.i32, width: ti.i32, height: ti.i32, fav_cats_amount: ti.i32
+    cat_n: ti.i32,
+    r1: ti.i32,
+    width: ti.i32,
+    height: ti.i32,
+    fav_cats_amount: ti.i32,
+    fav_cats_log: bool,
 ):
     global _CATS_N, _RADIUS_1, _PLATE_WIDTH, _PLATE_HEIGHT
     _CATS_N = cat_n
@@ -61,12 +67,14 @@ def setup_grid(
     _PLATE_WIDTH = width
     _PLATE_HEIGHT = height
 
-    global _FAV_CATS_AMOUNT, _NEW_LOGS, _OLD_LOGS, _OLD_STATUS
+    global _FAV_CATS_AMOUNT, _FAV_CATS_LOGGING, _NEW_LOGS, _OLD_LOGS, _OLD_STATUS
+    _FAV_CATS_LOGGING = fav_cats_log
     _FAV_CATS_AMOUNT = fav_cats_amount
     _NEW_LOGS = ti.field(ti.i32, shape=(fav_cats_amount, _CATS_N))
     _OLD_LOGS = ti.field(ti.i32, shape=(fav_cats_amount, _CATS_N))
     _OLD_STATUS = ti.field(ti.i8, shape=(fav_cats_amount,))
-    _OLD_STATUS.fill(1)
+    if _FAV_CATS_LOGGING:
+        _OLD_STATUS.fill(1)
 
     global _CELL_N, _GRID_COL_N, _GRID_ROW_N, _CELL_SZ
     _CELL_SZ = _RADIUS_1
@@ -131,10 +139,10 @@ def init_cell_storage(cats: ti.template()):
 def update_statuses(cats: ti.template()):
     init_cell_storage(cats)
 
+    if _FAV_CATS_LOGGING:
+        _NEW_LOGS.fill(0)
+
     ti.loop_config(serialize=True)
-
-    _NEW_LOGS.fill(0)
-
     for idx1 in range(_CATS_N):
         cell_idx = ti.floor(cats[idx1].point / _CELL_SZ, ti.i32)
 
@@ -155,9 +163,10 @@ def update_statuses(cats: ti.template()):
                     if idx1 != idx2:
                         status = cats[idx1].fight_with(cats[idx2])
 
-                        if idx1 < _FAV_CATS_AMOUNT:
+                        if _FAV_CATS_LOGGING and idx1 < _FAV_CATS_AMOUNT:
                             _NEW_LOGS[idx1, idx2] = status
 
+    if _FAV_CATS_LOGGING:
         for i in range(_FAV_CATS_AMOUNT):
             has_interaction = False
             for j in range(_CATS_N):

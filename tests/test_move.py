@@ -26,12 +26,7 @@ class TestMovePattern:
 
     @pytest.mark.parametrize(
         "x, y, move_radius",
-        [
-            (10, 50, 8),
-            (42, 17, 15),
-            (59, 10, 45),
-            (1, 2, 10),
-        ],
+        [(10, 50, 8), (42, 17, 15), (59, 10, 45), (1, 2, 10)],
     )
     def test_move_radius(self, x: int, y: int, move_radius: int):
         WIDTH, HEIGHT = 1000, 1000

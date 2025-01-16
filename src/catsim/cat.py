@@ -229,8 +229,8 @@ class Cat:
             dist = get_distance(self.point, other_cat.point, _DISTANCE_TYPE)
 
             if dist > _RADIUS_1 or (_PROB_INTER and ti.random() >= 1.0 / (dist * dist)):
-                # self.status = ti.max(self.status, INTERACTION_NO)
-                # _st = INTERACTION_NO
+                self.status = ti.max(self.status, INTERACTION_NO)
+                _st = INTERACTION_NO
                 pass
 
             else:
