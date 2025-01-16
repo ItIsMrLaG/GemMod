@@ -203,6 +203,7 @@ def main():
         width=cfg.PLATE_WIDTH,
         height=cfg.PLATE_HEIGHT,
         fav_cats_amount=cfg.FAV_CATS_AMOUNT,
+        fav_cats_log=cfg.FAV_CATS_LOGGING,
     )
 
     cats = Cat.field(shape=(cfg.CATS_N,))

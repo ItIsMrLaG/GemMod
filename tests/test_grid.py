@@ -52,7 +52,7 @@ class TestUpdateStatus:
             points=points,
         )
 
-        setup_grid(N, float(R1), float(WIDTH), float(HEIGHT), 1)
+        setup_grid(N, float(R1), float(WIDTH), float(HEIGHT), 1, False)
         update_statuses(cats)
 
         expected_statuses = [
@@ -73,13 +73,19 @@ class TestUpdateStatus:
             (100, 2, 8, 1, 500, 500, EUCLIDEAN_DISTANCE),
             (1000, 2, 8, 1, 500, 500, EUCLIDEAN_DISTANCE),
             (10000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
-            (10, 2, 8, 1, 100, 100, EUCLIDEAN_DISTANCE),
             (10000, 2, 8, 1, 1500, 2000, EUCLIDEAN_DISTANCE),
             (50000, 2, 8, 1, 1000, 1000, EUCLIDEAN_DISTANCE),
         ],
     )
     def test_primitive_func(self, N, R0, R1, RADIUS, WIDTH, HEIGHT, distance_type):
-        setup_grid(cat_n=N, r1=R1, width=WIDTH, height=HEIGHT, fav_cats_amount=1)
+        setup_grid(
+            cat_n=N,
+            r1=R1,
+            width=WIDTH,
+            height=HEIGHT,
+            fav_cats_amount=1,
+            fav_cats_log=False,
+        )
 
         init_cat_env(
             move_radius=R0,

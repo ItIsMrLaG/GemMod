@@ -34,6 +34,7 @@ class Config:
     # 0 <= amount <= CATS_N
     FAV_CATS_AMOUNT: int = 1
     FAV_CATS_OBSERVING: bool = True
+    FAV_CATS_LOGGING: bool = True
 
     # pi / 8 <= angle <= pi / 2
     OBSERVABLE_ANGLE_SPAN: float = ti.math.pi / 4
