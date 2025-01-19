@@ -8,4 +8,5 @@ ti.init(
     default_ip=ti.i32,
     random_seed=_RANDOM_SEED,
     debug=True,
+    log_level="off",
 )
