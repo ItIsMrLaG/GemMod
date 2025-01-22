@@ -116,10 +116,87 @@ rye test
 ```
 
 ### Примеры запуска demo
-**todo**
+Для запуска необходимо создать файл конфигурации, его пример приведен ниже:
+```json
+{
+    "PLATE_WIDTH": <ширина окна отрисовки>,
+    "PLATE_HEIGHT": <высота окна отрисовки>,
+    "CATS_N": <количество котов>,
+    "CAT_RADIUS": <радиус кота>,
+    "MOVE_RADIUS": <радиус перемещения кота>,
+    "ACT_MIN_RADIUS": <минимальный радиус взаимодействия>,
+    "ACT_MAX_RADIUS": <максимальный радиус взаимодействия>,
+    "MOVE_PATTERN_ID": <паттерн перемещения>,
+    "DISTANCE": <используемая функция расстояния>,
+    "FAV_CATS_AMOUNT": <количество "любимых" котов>,
+    "FAV_CATS_OBSERVING": <отображение "вид от третьего лица кота">,
+    "BORDER_INTERACTION": <включение взаимодействия с границей>,
+    "PROB_INTERACTION": <включение вероятностного взаимодействия>,
+    "FAV_CATS_LOGGING": <включение логирования>
+}
+```
+> В случае, если какая-то настройка не указана, значение будет выставляться по умолчанию.
+> ```json
+> "PLATE_WIDTH": 1500,
+> "PLATE_HEIGHT": 1000,
+> "CATS_N": 150,
+> "CAT_RADIUS": 20,
+> "MOVE_RADIUS": 40,
+> "ACT_MIN_RADIUS": 40,
+> "ACT_MAX_RADIUS": 60,
+> "MOVE_PATTERN_ID": "MOVE_PATTERN_PHIS",
+> "DISTANCE": "EUCLIDEAN_DISTANCE",
+> "FAV_CATS_AMOUNT": 1,
+> "FAV_CATS_OBSERVING": true,
+> "BORDER_INTERACTION": true,
+> "PROB_INTERACTION": false,
+> "FAV_CATS_LOGGING": true
+> ```
 
+Запуск приложения происходит командой:
+```shell
+python src/catsim <CFG.json>
+```
+
+#### Примеры cfg.json
+В директории `examples` находятся три примера
+
+Запуск стрессовых настроек (когда все фичи активированы)
+```shell
+python src/catsim examples/cfg_500_000.json
+```
+
+Запуск "красивого" примера:
+```shell
+python src/catsim examples/cfg_beautiful.json
+```
+
+Запуск с включенным взаимодействием с границами:
+```shell
+python src/catsim examples/cfg_border_magic.json
+```
 ### Описание возможных настроек
-**todo**
+`MOVE_PATTERN_ID`:
+* `"MOVE_PATTERN_PHIS"` -- отражение от стенок с потерей скорости
+* `"MOVE_PATTERN_LINE"` -- изменения направления и скорости движения при столкновении со стенкой
+* `"MOVE_PATTERN_RANDOM"` -- случайное перемещение в рамках `MOVE_RADIUS`
+
+`DISTANCE`:
+* `"EUCLIDEAN_DISTANCE"`
+* `"MANHATTAN_DISTANCE"`
+* `"CHEBYSHEV_DISTANCE"`
+
+`CATS_N` -- `0 < ... <=500_000`
+
+`FAV_CATS_AMOUNT` -- `<1..5> < CATS_N`
+
+`FAV_CATS_OBSERVING` -- `true | false` (включено/выключено)
+
+`BORDER_INTERACTION` -- `true | false` (включено/выключено)
+
+`PROB_INTERACTION` -- `true | false` (включено/выключено)
+
+`FAV_CATS_LOGGING` -- `true | false` (включено/выключено)
 
 ---
 
