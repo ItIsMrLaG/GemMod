@@ -120,7 +120,7 @@ def mainloop(cfg: Config, cats: ti.template(), gui: ti.GUI):
         gui.show()
 
 
-def validate_config(cfg):
+def validate_config(cfg: Config):
     if cfg.PLATE_HEIGHT <= 0 or cfg.PLATE_WIDTH <= 0:
         raise ValueError("Plate height/width must be > 0")
 
@@ -136,12 +136,12 @@ def validate_config(cfg):
     if (
         cfg.CAT_RADIUS <= 0
         or cfg.MOVE_RADIUS <= 0
-        or cfg.RADIUS_0 <= 0
-        or cfg.RADIUS_1 <= 0
+        or cfg.ACT_MIN_RADIUS <= 0
+        or cfg.ACT_MAX_RADIUS <= 0
     ):
         raise ValueError("Radius must be > 0")
 
-    if cfg.RADIUS_1 <= cfg.RADIUS_0:
+    if cfg.ACT_MAX_RADIUS <= cfg.ACT_MIN_RADIUS:
         raise ValueError("Radius 1 must be > Radius 0")
 
 
@@ -160,7 +160,7 @@ def init_env(cfg: Config):
 
     global LINE_LENGTH, ANGLE_SHIFT
     LINE_LENGTH = tm.vec2(
-        [cfg.RADIUS_1 / cfg.PLATE_WIDTH, cfg.RADIUS_1 / cfg.PLATE_HEIGHT]
+        [cfg.ACT_MAX_RADIUS / cfg.PLATE_WIDTH, cfg.ACT_MAX_RADIUS / cfg.PLATE_HEIGHT]
     )
     ANGLE_SHIFT = tm.vec2(
         [
@@ -172,21 +172,17 @@ def init_env(cfg: Config):
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("config_file", type=str)
+    parser.add_argument("config_file", type=str, help="Path to configuration JSON file")
     return parser.parse_args()
 
 
-def main():
-    args = parse_arguments()
-    cfg = Config.generate_from_json(Path(args.config_file))
-    validate_config(cfg)
-
+def main(cfg: Config):
     init_env(cfg)
 
     init_cat_env(
         move_radius=cfg.MOVE_RADIUS,
-        r0=cfg.RADIUS_0,
-        r1=cfg.RADIUS_1,
+        r0=cfg.ACT_MIN_RADIUS,
+        r1=cfg.ACT_MAX_RADIUS,
         width=cfg.PLATE_WIDTH,
         height=cfg.PLATE_HEIGHT,
         move_pattern=cfg.MOVE_PATTERN_ID,
@@ -199,7 +195,7 @@ def main():
 
     setup_grid(
         cat_n=cfg.CATS_N,
-        r1=cfg.RADIUS_1,
+        r1=cfg.ACT_MAX_RADIUS,
         width=cfg.PLATE_WIDTH,
         height=cfg.PLATE_HEIGHT,
         fav_cats_amount=cfg.FAV_CATS_AMOUNT,
@@ -226,4 +222,16 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        args = parse_arguments()
+        cfg = Config.generate_from_json(Path(args.config_file))
+        validate_config(cfg)
+        main(cfg)
+    except ValueError as v_err:
+        print(f"Problem with json argument parsing: {v_err}")
+    except AssertionError as a_err:
+        print(f"The illegal condition was appeared: {a_err}")
+    except ti.TaichiRuntimeError as rt_err:
+        print(f"Problem with taichi runtime: {rt_err}")
+    except Exception as e_err:
+        print(f"Untyped error {e_err}")

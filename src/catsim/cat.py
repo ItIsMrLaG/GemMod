@@ -22,8 +22,8 @@ from catsim.tools import (
     move_pattern_random,
 )
 
-_RADIUS_0: ti.f32
-_RADIUS_1: ti.f32
+_ACT_MIN_RADIUS: ti.f32
+_ACT_MAX_RADIUS: ti.f32
 _PLATE_WIDTH: ti.i32
 _PLATE_HEIGHT: ti.i32
 _MOVE_RADIUS: ti.f32
@@ -52,8 +52,8 @@ def init_cat_env(
     observable_angle_span: float,
 ):
     global \
-        _RADIUS_0, \
-        _RADIUS_1, \
+        _ACT_MIN_RADIUS, \
+        _ACT_MAX_RADIUS, \
         _PLATE_WIDTH, \
         _PLATE_HEIGHT, \
         _MOVE_RADIUS, \
@@ -66,8 +66,8 @@ def init_cat_env(
         _OBSERVABLE_ANGLE_SPAN
 
     _MOVE_RADIUS = move_radius
-    _RADIUS_0 = r0
-    _RADIUS_1 = r1
+    _ACT_MIN_RADIUS = r0
+    _ACT_MAX_RADIUS = r1
     _PLATE_WIDTH = width
     _PLATE_HEIGHT = height
     _MOVE_PATTERN = move_pattern
@@ -228,7 +228,9 @@ class Cat:
         ):
             dist = get_distance(self.point, other_cat.point, _DISTANCE_TYPE)
 
-            if dist > _RADIUS_1 or (_PROB_INTER and ti.random() >= 1.0 / (dist * dist)):
+            if dist > _ACT_MAX_RADIUS or (
+                _PROB_INTER and ti.random() >= 1.0 / (dist * dist)
+            ):
                 self.status = ti.max(self.status, INTERACTION_NO)
                 _st = INTERACTION_NO
                 pass
@@ -244,13 +246,13 @@ class Cat:
                         self.observable_angle[0]
                         < relative_angle
                         < self.observable_angle[1]
-                    ) or dist <= _RADIUS_0:
+                    ) or dist <= _ACT_MIN_RADIUS:
                         other_cat.observed = True
                     else:
                         observing = False
 
                 if observing:
-                    if dist <= _RADIUS_0:
+                    if dist <= _ACT_MIN_RADIUS:
                         self.status = INTERACTION_LEVEL_0
                         _st = INTERACTION_LEVEL_0
                     else:

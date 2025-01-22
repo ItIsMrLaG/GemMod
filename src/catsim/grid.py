@@ -11,7 +11,7 @@ __all__ = [
 
 # global settings
 _CATS_N: ti.i32
-_RADIUS_1: ti.i32
+_ACT_MAX_RADIUS: ti.i32
 _PLATE_WIDTH: ti.i32
 _PLATE_HEIGHT: ti.i32
 
@@ -61,7 +61,7 @@ def setup_grid(
     fav_cats_amount: ti.i32,
     fav_cats_log: bool,
 ):
-    global _CATS_N, _RADIUS_1, _PLATE_WIDTH, _PLATE_HEIGHT
+    global _CATS_N, _ACT_MAX_RADIUS, _PLATE_WIDTH, _PLATE_HEIGHT
     _CATS_N = cat_n
     _RADIUS_1 = r1
     _PLATE_WIDTH = width

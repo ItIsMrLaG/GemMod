@@ -19,8 +19,8 @@ class Config:
     # ----- CAT -----
     CAT_RADIUS: float = 0.02 * PLATE_HEIGHT
     MOVE_RADIUS: float = CAT_RADIUS * 2
-    RADIUS_0: float = CAT_RADIUS * 2
-    RADIUS_1: float = RADIUS_0 * 3
+    ACT_MIN_RADIUS: float = CAT_RADIUS * 2
+    ACT_MAX_RADIUS: float = ACT_MIN_RADIUS * 3
 
     # ----- PATTERNS -----
     MOVE_PATTERN_ID: int = enums.MOVE_PATTERN_PHIS
