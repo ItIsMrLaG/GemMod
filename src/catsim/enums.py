@@ -1,5 +1,8 @@
 import taichi as ti
 
+# ----- BORDER CONSTANTS ----- #
+EPS = 1
+
 # ----- MOVE PATTERNS ----- #
 MOVE_PATTERN_RANDOM = 0
 MOVE_PATTERN_LINE = 1

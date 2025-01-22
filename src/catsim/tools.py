@@ -4,9 +4,8 @@ import taichi.math as tm
 from catsim.enums import (
     CHEBYSHEV_DISTANCE,
     MANHATTAN_DISTANCE,
+    EPS,
 )
-
-EPS = 1
 
 
 @ti.func
