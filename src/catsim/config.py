@@ -5,6 +5,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 import taichi as ti
+import taichi.math as tm
 
 enums = importlib.import_module("enums")
 
@@ -65,3 +66,30 @@ class Config:
                 _cfg_data[key] = value
 
         return Config(**_cfg_data)
+
+    def validate(self):
+        if self.PLATE_HEIGHT <= 0 or self.PLATE_WIDTH <= 0:
+            raise ValueError("Plate height/width must be > 0")
+
+        if self.CATS_N <= 0:
+            raise ValueError("Number of cats must be > 0")
+
+        if not (0 <= self.FAV_CATS_AMOUNT <= self.CATS_N):
+            raise ValueError("Invalid amount of favorite cats")
+
+        if not (tm.pi / 8 <= self.OBSERVABLE_ANGLE_SPAN <= tm.pi / 2):
+            raise ValueError("Invalid observable angle span")
+
+        if (
+            self.CAT_RADIUS <= 0
+            or self.MOVE_RADIUS <= 0
+            or self.ACT_MIN_RADIUS <= 0
+            or self.ACT_MAX_RADIUS <= 0
+        ):
+            raise ValueError("Radius must be > 0")
+
+        if self.ACT_MAX_RADIUS <= self.ACT_MIN_RADIUS:
+            raise ValueError("Radius 1 must be > Radius 0")
+
+        if self.FAV_CATS_AMOUNT > 5:
+            raise ValueError("Favorite cats cannot be more than 5")

@@ -120,31 +120,6 @@ def mainloop(cfg: Config, cats: ti.template(), gui: ti.GUI):
         gui.show()
 
 
-def validate_config(cfg: Config):
-    if cfg.PLATE_HEIGHT <= 0 or cfg.PLATE_WIDTH <= 0:
-        raise ValueError("Plate height/width must be > 0")
-
-    if cfg.CATS_N <= 0:
-        raise ValueError("Number of cats must be > 0")
-
-    if not (0 <= cfg.FAV_CATS_AMOUNT <= cfg.CATS_N):
-        raise ValueError("Invalid amount of favorite cats")
-
-    if not (tm.pi / 8 <= cfg.OBSERVABLE_ANGLE_SPAN <= tm.pi / 2):
-        raise ValueError("Invalid observable angle span")
-
-    if (
-        cfg.CAT_RADIUS <= 0
-        or cfg.MOVE_RADIUS <= 0
-        or cfg.ACT_MIN_RADIUS <= 0
-        or cfg.ACT_MAX_RADIUS <= 0
-    ):
-        raise ValueError("Radius must be > 0")
-
-    if cfg.ACT_MAX_RADIUS <= cfg.ACT_MIN_RADIUS:
-        raise ValueError("Radius 1 must be > Radius 0")
-
-
 def init_env(cfg: Config):
     global POINTS, CAT_COLORS, RADII
     POINTS = tm.vec2.field(shape=(cfg.CATS_N,))
@@ -225,7 +200,7 @@ if __name__ == "__main__":
     try:
         args = parse_arguments()
         cfg = Config.generate_from_json(Path(args.config_file))
-        validate_config(cfg)
+        cfg.validate()
         main(cfg)
     except ValueError as v_err:
         print(f"Problem with json argument parsing: {v_err}")
