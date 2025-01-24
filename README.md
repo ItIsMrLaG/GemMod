@@ -93,21 +93,10 @@
 rye sync && rye run pre-commit install
 ```
 
-### Запуск
-
-```bash
-rye run python -m src.catsim
+### Запуск:
+```shell
+python src/catsim <CFG.json>
 ```
-
-> На текущий момент настройка параметров запуска происходит только через конфигурационный
-> файл (`run_config.py`)
->
-> **Пример:**
-> ```python
-> PLATE_WIDTH, PLATE_HEIGHT = 2000, 2000
-> CATS_N = 500000
-> ...
-> ```
 
 ### Запуск тестов
 
@@ -152,11 +141,6 @@ rye test
 > "PROB_INTERACTION": false,
 > "FAV_CATS_LOGGING": true
 > ```
-
-Запуск приложения происходит командой:
-```shell
-python src/catsim <CFG.json>
-```
 
 #### Примеры cfg.json
 В директории `examples` находятся три примера
